@@ -12,7 +12,7 @@ public class hud_energy : base_hud
     protected override void Awake()
     {
         base.Awake();
-        Player.onEnergyUpdate += GetEnergy;
+        MainPlayer.onEnergyUpdate += GetEnergy;
     }
 
     // Start is called before the first frame update
@@ -23,7 +23,7 @@ public class hud_energy : base_hud
 
     void OnDestroy()
     {
-        Player.onEnergyUpdate -= GetEnergy;
+        MainPlayer.onEnergyUpdate -= GetEnergy;
     }
 
     // Update is called once per frame

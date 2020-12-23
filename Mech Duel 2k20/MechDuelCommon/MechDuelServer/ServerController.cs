@@ -6,13 +6,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace MechDuelServer
 {
     class ServerController
     {
-
         private List<Player> _players;
         public ServerController()
         {

@@ -14,7 +14,7 @@ public class PlayerMovementManager : MonoBehaviour
     float sprintSpeed;
     float currentSpeed;
     float jumpPower = 2;
-    Player player;
+    MainPlayer player;
     Quaternion originalRotation;
     Vector3 dir;
     bool jumping; //Jumping
@@ -27,15 +27,17 @@ public class PlayerMovementManager : MonoBehaviour
     [SerializeField]
     readonly float EnergySpendingTime = 0.05f;
 
+    Vector3 oldPos;
+
     // awake is the first thing to be called
     void Awake()
     {
         cam = GetComponentInChildren<Camera>();
         controller = GetComponent<CharacterController>();
-        player = GetComponent<Player>();
+        player = GetComponent<MainPlayer>();
         jumping = false;       
         EnergySpendingTimer = 0;
-
+        oldPos = transform.position;
     }
 
     // Start is called before the first frame update
@@ -120,6 +122,8 @@ public class PlayerMovementManager : MonoBehaviour
     //Movement Calculations
     void moveCharacter(Vector3 d)
     {
+        oldPos = transform.position;
+
         controller.Move(new Vector3(
         d.x * currentSpeed * Time.deltaTime,
         0,
@@ -131,7 +135,7 @@ public class PlayerMovementManager : MonoBehaviour
             0,
             d.y * runSpeed * Time.deltaTime,
             0));
-        }
+        }        
     }
 
     //Jumping

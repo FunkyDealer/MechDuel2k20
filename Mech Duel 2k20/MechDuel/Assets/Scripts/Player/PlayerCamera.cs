@@ -13,7 +13,7 @@ public class PlayerCamera : MonoBehaviour
     float rotAverageY = 0F;
     Quaternion originalRotation;
     PlayerMovementManager playerMM;
-    Player player;
+    MainPlayer player;
 
     // Awake is the first thing to run
     void Awake()
@@ -21,7 +21,7 @@ public class PlayerCamera : MonoBehaviour
         Rigidbody rb = GetComponent<Rigidbody>();
         if (rb) rb.freezeRotation = true;
         playerMM = GetComponentInParent<PlayerMovementManager>();
-        player = GetComponentInParent<Player>();
+        player = GetComponentInParent<MainPlayer>();
     }
 
     // Start is called before the first frame update

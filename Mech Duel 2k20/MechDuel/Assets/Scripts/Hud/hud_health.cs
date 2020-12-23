@@ -10,7 +10,7 @@ public class hud_health : base_hud
     protected override void Awake()
     {
         base.Awake();
-        Player.onHealthUpdate += GetHealth;
+        MainPlayer.onHealthUpdate += GetHealth;
     }
 
     // Start is called before the first frame update
@@ -21,7 +21,7 @@ public class hud_health : base_hud
 
     void OnDestroy()
     {
-        Player.onHealthUpdate -= GetHealth;
+        MainPlayer.onHealthUpdate -= GetHealth;
     }
 
     // Update is called once per frame

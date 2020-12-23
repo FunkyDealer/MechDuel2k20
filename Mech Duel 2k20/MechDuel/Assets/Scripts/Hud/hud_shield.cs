@@ -9,7 +9,7 @@ public class hud_shield : base_hud
     protected override void Awake()
     {
         base.Awake();
-        Player.onShieldUpdate += GetShield;
+        MainPlayer.onShieldUpdate += GetShield;
     }
 
     // Start is called before the first frame update
@@ -20,7 +20,7 @@ public class hud_shield : base_hud
 
     void OnDestroy()
     {
-        Player.onEnergyUpdate -= GetShield;
+        MainPlayer.onEnergyUpdate -= GetShield;
     }
 
     // Update is called once per frame
