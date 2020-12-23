@@ -31,9 +31,9 @@ public class TCPClientController : MonoBehaviour
     private List<GameObject> spawnPoints;
 
     void Awake()
-    {
-        player = new Player();
+    {       
         playersList = new Dictionary<Guid, GameObject>();
+        player = new Player();
         player.GameState = GameState.Disconnected;
         player.TcpClient = new TcpClient();
     }
@@ -41,30 +41,6 @@ public class TCPClientController : MonoBehaviour
     void Start()
     {
 
-    }
-
-    public void StartTcpClient()
-    {
-        player.TcpClient.BeginConnect(IPAddress.Parse(IpAddress), Port, AcceptConnection, player.TcpClient);
-        player.GameState = GameState.Connecting;
-    }
-
-    private void AcceptConnection(IAsyncResult ar)
-    {
-        TcpClient client = (TcpClient)ar.AsyncState;
-        client.EndConnect(ar);
-
-        if (client.Connected)
-        {
-            Debug.Log("client connected");
-            player.BinaryReader = new System.IO.BinaryReader(client.GetStream());
-            player.BinaryWriter = new System.IO.BinaryWriter(client.GetStream());
-            player.MessageList = new List<Message>();
-        }
-        else
-        {
-            Debug.Log("Client connection refused");
-        }
     }
 
     void Update()
@@ -75,7 +51,7 @@ public class TCPClientController : MonoBehaviour
             switch (player.GameState)
             {
                 case GameState.Connecting:
-                    //Debug.Log("connecting");
+                   // Debug.Log("connecting");
                     Connecting();
                     break;
                 case GameState.Connected:
@@ -96,24 +72,41 @@ public class TCPClientController : MonoBehaviour
         }
     }
 
+    public void StartTcpClient()
+    {
+        player.TcpClient.BeginConnect(IPAddress.Parse(IpAddress), Port, AcceptConnection, player.TcpClient);
+        player.GameState = GameState.Connecting;
+    }
+
+    private void AcceptConnection(IAsyncResult ar)
+    {
+        TcpClient client = (TcpClient)ar.AsyncState;
+        client.EndConnect(ar);
+
+        if (client.Connected)
+        {
+            Debug.Log("client connected");
+            player.MessageList = new List<Message>();
+        }
+        else
+        {
+            Debug.Log("Client connection refused");
+        }
+    }
+
+
+
     private void GameStarted()
     {
-        if (player.TcpClient.GetStream().DataAvailable)
+        if (player.DataAvailable())
         {
-            Message message = ReceiveMessage();
+            Message message = player.ReadMessage();
 
             if (message.MessageType == MessageType.NewPlayer) SpawnNewPlayer(message);
             else if (message.MessageType == MessageType.PlayerMovement) UpdatePlayerMovement(message);
         }
     }
 
-    private Message ReceiveMessage()
-    {
-        string json = player.BinaryReader.ReadString();
-        Message m = JsonConvert.DeserializeObject<Message>(json);
-        player.MessageList.Add(m);
-        return m;
-    }
 
     #region connecting
 
@@ -122,7 +115,7 @@ public class TCPClientController : MonoBehaviour
         if (player.DataAvailable())
         {
             Debug.Log("Connected");
-            Message message = ReceiveMessage();
+            Message message = player.ReadMessage();
             Debug.Log(message.Description);
             player.GameState = GameState.Sync;
         }
@@ -132,18 +125,11 @@ public class TCPClientController : MonoBehaviour
     {
         if (player.DataAvailable())
         {
-            string playerJsonString = player.BinaryReader.ReadString();
-            Player temp = JsonConvert.DeserializeObject<Player>(playerJsonString);
-            player.Id = temp.Id;
-            player.MessageList.Add(player.MessageList.FirstOrDefault());
+            Player playerJson = player.ReadPlayer();
+            player.Id = playerJson.Id;
             player.Name = playerNameInputText.text;
 
-            Message message = new Message();
-            message.MessageType = MessageType.PlayerName;
-            player.MessageList.Add(message);
-
-            string newPlayerJsonString = JsonConvert.SerializeObject(player);
-            player.BinaryWriter.Write(newPlayerJsonString);
+            player.SendPlayer(player);
             player.GameState = GameState.Connected;
         }
     }
@@ -152,10 +138,10 @@ public class TCPClientController : MonoBehaviour
     private void Sync()
     {
        // Debug.Log("Syncing");
-        if (player.TcpClient.GetStream().DataAvailable)
+        if (player.DataAvailable())
         {
-           // Debug.Log("Data to read");
-            Message messageReceived = ReceiveMessage();
+            // Debug.Log("Data to read");
+            Message messageReceived = player.ReadMessage();
 
             //string json = player.BinaryReader.ReadString();
             switch (messageReceived.MessageType)
@@ -192,10 +178,7 @@ public class TCPClientController : MonoBehaviour
     private void UpdatePlayerMovement(Message m)
     {
         if (playersList.ContainsKey(m.PlayerInfo.Id))
-        {
-            GameObject p = playersList[m.PlayerInfo.Id];
-            p.transform.position = new Vector3(m.PlayerInfo.X, m.PlayerInfo.Y, m.PlayerInfo.Z);
-        }
+            playersList[m.PlayerInfo.Id].transform.position = new Vector3(m.PlayerInfo.X, m.PlayerInfo.Y, m.PlayerInfo.Z);
     }
 
     private void FinishSync(Message m)
@@ -212,11 +195,4 @@ public class TCPClientController : MonoBehaviour
         player.GameState = GameState.GameStarted;
     }
 
-
-    public void SendMessage(Message m)
-    {
-        string json = JsonConvert.SerializeObject(m);
-        player.BinaryWriter.Write(json);
-        player.MessageList.Add(m);
-    }
 }

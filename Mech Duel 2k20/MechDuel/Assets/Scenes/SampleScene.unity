@@ -1876,7 +1876,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IpAddress: 127.0.0.1
-  Port: 7
+  Port: 7777
   playerNameInputText: {fileID: 696320705}
   mainPlayerPrefab: {fileID: 6110329242465213172, guid: f9f1864b41705024cb9c1c232f4643aa,
     type: 3}

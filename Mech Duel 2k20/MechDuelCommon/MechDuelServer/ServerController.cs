@@ -11,14 +11,15 @@ namespace MechDuelServer
 {
     class ServerController
     {
-        private List<Player> _players;
+        private List<Player> playersList;
         public ServerController()
         {
-            _players = new List<Player>();
+            playersList = new List<Player>();
         }
 
-        public void StartServer(int port)
+        public void StartServer()
         {
+            int port = 7777;
             TcpListener listener = new TcpListener(IPAddress.Parse("127.0.0.1"), port);
             listener.Start();
 
@@ -27,14 +28,15 @@ namespace MechDuelServer
 
             while (true)
             {
-                try
-                {
+                //try
+                //{
                     if (listener.Pending())
                     {
                         Console.WriteLine("New pending connection");
                         listener.BeginAcceptTcpClient(AcceptClient, listener);
+                    }
 
-                        foreach (var p in _players)
+                        foreach (var p in playersList)
                         {
                             Console.WriteLine(p.GameState.ToString());
                             switch (p.GameState)
@@ -50,33 +52,35 @@ namespace MechDuelServer
                                     break;
                             }
                         }
-                    }
-                    // TcpClient client = await listener.
-                    // HandleConnectionAsync(client);
-                }
-                catch (Exception)
+                //}
+                //catch (Exception)
+                //{
+                //    Console.WriteLine("Error occurred");
+                //}
+            }
+        }
+
+        private void GameStarted(Player player)
+        {
+            if (player.DataAvailable())
+            {
+                Console.WriteLine("New player position ");
+                Message message = player.ReadMessage();
+                if (message.MessageType == MessageType.PlayerMovement)
                 {
-                    Console.WriteLine("Error occurred");
+                    //players.Where(s => s.GameState == GameState.GameStarted).
+                    //    ToList().ForEach(p => p.SendMessage(message));
+                    foreach (var p in playersList)
+                    {
+                        if (p.GameState == GameState.GameStarted)
+                        {
+                            p.SendMessage(message);
+                        }
+                    }
                 }
             }
         }
 
-        private void GameStarted(Player p)
-        {
-            if (p.DataAvailable())
-            {
-                string json = p.BinaryReader.ReadString();
-                Console.WriteLine($"new Player position: {json}");
-                Message message = JsonConvert.DeserializeObject<Message>(json);
-                if (message.MessageType == MessageType.PlayerMovement)
-                {
-                    foreach (var i in _players)
-                    {
-                        p.BinaryWriter.Write(json);
-                    }
-                }
-            }
-        }
 
         private void Sync(Player p)
         {
@@ -90,48 +94,40 @@ namespace MechDuelServer
             // update game State
             Message msg = new Message();
             msg.MessageType = MessageType.FinishedSync;
-            string json = JsonConvert.SerializeObject(msg);
-            p.BinaryWriter.Write(json);
+            p.SendMessage(msg);
             p.GameState = GameState.GameStarted;
         }
 
         private void SyncPlayerMovements(Player player)
         {
-            foreach (var p in _players)
+            foreach (var p in playersList)
             {
                 if (p.GameState == GameState.GameStarted)
                 {
                     var last = p.MessageList.LastOrDefault(x => x.MessageType == MessageType.PlayerMovement);
                     if (last != null)
                     {
-                        var info = last.PlayerInfo;
                         Message msg = new Message();
-                        msg.PlayerInfo = info;
-                        SendMessage(player, msg);
+                        msg.PlayerInfo = last.PlayerInfo;
+                        p.SendMessage(msg);
                     }
                 }
             }
         }
 
-        private void SendMessage(Player player, Message msg)
-        {
-            string json = JsonConvert.SerializeObject(msg);
-            player.BinaryWriter.Write(json);
-        }
 
         private void SyncNewPlayers(Player player)
         {
-            foreach (var p in _players)
+            foreach (var p in playersList)
             {
                 if (p.GameState == GameState.GameStarted)
                 {
                     Message m = new Message();
                     m.MessageType = MessageType.NewPlayer;
-                    PlayerInfo info = p.MessageList.FirstOrDefault(x =>
-                                                   x.MessageType == MessageType.NewPlayer).PlayerInfo;
+                    PlayerInfo info = p.MessageList.FirstOrDefault(x => x.MessageType == MessageType.NewPlayer).PlayerInfo;
                     m.PlayerInfo = info;
 
-                    SendMessage(player, m);
+                    player.SendMessage(m);
                 }
             }
         }
@@ -141,63 +137,48 @@ namespace MechDuelServer
             if (p.DataAvailable())
             {
                 Console.WriteLine("New player registering");
-                string playerJson = p.BinaryReader.ReadString();
-                Player playerMsg = JsonConvert.DeserializeObject<Player>(playerJson);
+                Player playerMsg = p.ReadPlayer();
                 p.Name = playerMsg.Name;
 
-                foreach (Player notifyPlayer in _players)
+                foreach (Player NP in playersList)
                 {
                     Message msg = new Message();
                     msg.MessageType = MessageType.NewPlayer;
-                    msg.Description = (notifyPlayer == p) ?
+                    msg.Description = (NP == p) ?
                         "Successfully joined" :
-                        "Player " + p.Name + " has joined";
-                    PlayerInfo playerInfo = new PlayerInfo();
-                    playerInfo.Id = p.Id;
-                    playerInfo.Name = p.Name;
-                    playerInfo.X = 0;
-                    playerInfo.Y = 0;
-                    playerInfo.Z = 0;
-                    msg.PlayerInfo = playerInfo;
+                        $"Player {p.Name} has joined";
+                    PlayerInfo info = new PlayerInfo();
+                    info.Id = p.Id;
+                    info.Name = p.Name;
+                    info.X = 0;
+                    info.Y = 0;
+                    info.Z = 0;
+                    msg.PlayerInfo = info;
 
-                    string msgJson = JsonConvert.SerializeObject(msg);
-                    notifyPlayer.BinaryWriter.Write(msgJson);
-                    notifyPlayer.MessageList.Add(msg);
-                    Console.WriteLine(msgJson);
+                    NP.SendMessage(msg);
+                    NP.Messages.Add(msg);
                 }
                 p.GameState = GameState.Sync;
             }
         }
 
-        private void AcceptClient(IAsyncResult ar)
+        private void AcceptClient(IAsyncResult result)
         {
-            TcpListener listener = (TcpListener)ar.AsyncState;
-            TcpClient client = listener.EndAcceptTcpClient(ar);
+            TcpListener listener = (TcpListener)result.AsyncState;
+            TcpClient client = listener.EndAcceptTcpClient(result);
 
             if (client.Connected)
             {
                 Console.WriteLine("accepted new client");
+                Player p = new Player();
+                p.Messages = new List<Message>();
+               // p.Id = new Guid();
+                p.Id = Guid.NewGuid();
+                p.GameState = GameState.Connecting;
+                p.TcpClient = client;
+                playersList.Add(p); 
 
-                Player player = new Player();
-                Message message = new Message();
-                message.Description = "Hello new player";
-                message.MessageType = MessageType.Information;
-
-                player.MessageList = new List<Message>();
-                player.MessageList.Add(message);
-                player.TcpClient = client;
-                player.BinaryReader = new System.IO.BinaryReader(client.GetStream());
-                player.BinaryWriter = new System.IO.BinaryWriter(client.GetStream());
-                player.Id = Guid.NewGuid();
-                player.GameState = GameState.Connecting;
-
-                //add player to list of player
-                _players.Add(player);
-
-                string json = JsonConvert.SerializeObject(player);
-                Console.WriteLine(json);
-                player.BinaryWriter.Write(json);
-
+                p.SendPlayer(p);
             }
             else
             {

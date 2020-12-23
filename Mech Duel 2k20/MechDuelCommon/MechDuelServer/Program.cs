@@ -11,7 +11,7 @@ namespace MechDuelServer
         static void Main(string[] args)
         {
             ServerController server = new ServerController();
-            server.StartServer(7);
+            server.StartServer();
         }
     }
 }
