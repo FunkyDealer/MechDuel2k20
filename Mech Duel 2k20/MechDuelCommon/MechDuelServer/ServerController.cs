@@ -173,7 +173,7 @@ namespace MechDuelServer
                 Player p = new Player();
                 p.MessageList = new List<Message>();
                 p.Id = new Guid();
-                //p.Id = Guid.NewGuid();
+                p.Id = Guid.NewGuid();
                 p.GameState = GameState.Connecting;
                 p.TcpClient = client;
                 playersList.Add(p); 
