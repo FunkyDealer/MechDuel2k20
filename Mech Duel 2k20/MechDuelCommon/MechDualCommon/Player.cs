@@ -9,15 +9,14 @@ namespace MechDuelCommon
     public class Player
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
-        public List<Message> MessageList { get; set; }
+        public string Name { get; set; }    
         [JsonIgnore]
         public TcpClient TcpClient { get; set; }
         public GameState GameState { get; set; }
-        public List<Message> Messages { get; set; }
-        public BinaryReader BinaryReader;
-        public BinaryWriter BinaryWriter;
+        public List<Message> MessageList { get; set; }
 
+        private BinaryReader BinaryReader;
+        private BinaryWriter BinaryWriter;
 
         public bool DataAvailable()
         {

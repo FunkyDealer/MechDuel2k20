@@ -38,7 +38,7 @@ namespace MechDuelServer
 
                         foreach (var p in playersList)
                         {
-                            Console.WriteLine(p.GameState.ToString());
+                           // Console.WriteLine(p.GameState.ToString());
                             switch (p.GameState)
                             {
                                 case GameState.Connecting:
@@ -156,7 +156,7 @@ namespace MechDuelServer
                     msg.PlayerInfo = info;
 
                     NP.SendMessage(msg);
-                    NP.Messages.Add(msg);
+                    NP.MessageList.Add(msg);
                 }
                 p.GameState = GameState.Sync;
             }
@@ -171,9 +171,9 @@ namespace MechDuelServer
             {
                 Console.WriteLine("accepted new client");
                 Player p = new Player();
-                p.Messages = new List<Message>();
-               // p.Id = new Guid();
-                p.Id = Guid.NewGuid();
+                p.MessageList = new List<Message>();
+                p.Id = new Guid();
+                //p.Id = Guid.NewGuid();
                 p.GameState = GameState.Connecting;
                 p.TcpClient = client;
                 playersList.Add(p); 

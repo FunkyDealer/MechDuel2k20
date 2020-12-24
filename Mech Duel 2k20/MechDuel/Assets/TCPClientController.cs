@@ -78,15 +78,14 @@ public class TCPClientController : MonoBehaviour
         player.GameState = GameState.Connecting;
     }
 
-    private void AcceptConnection(IAsyncResult ar)
+    private void AcceptConnection(IAsyncResult result)
     {
-        TcpClient client = (TcpClient)ar.AsyncState;
-        client.EndConnect(ar);
+        TcpClient client = (TcpClient)result.AsyncState;
+        client.EndConnect(result);
 
         if (client.Connected)
         {
             Debug.Log("client connected");
-            player.MessageList = new List<Message>();
         }
         else
         {
