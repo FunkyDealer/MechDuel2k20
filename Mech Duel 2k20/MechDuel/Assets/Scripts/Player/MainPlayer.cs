@@ -52,6 +52,9 @@ public class MainPlayer : Entity
     public int CurrentArmour() => currentArmour;
     public int MaxArmour() => maxArmour;
 
+    [SerializeField]
+    GameObject hud;
+
     protected override void Awake()
     {
         alive = true;
@@ -68,6 +71,9 @@ public class MainPlayer : Entity
     protected override void Start()
     {
         base.Start();
+
+        Instantiate(hud, Vector3.zero, Quaternion.identity);
+
         onHealthUpdate(currentHealth, maxHealth);
         onEnergyUpdate(currentEnergy, maxEnergy);
         onShieldUpdate(currentArmour, maxArmour);

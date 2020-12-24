@@ -22,7 +22,7 @@ public class TCPClientController : MonoBehaviour
     private Dictionary<Guid, GameObject> playersList;
 
     [SerializeField]
-    private GameObject mainPlayerPrefab;
+    private GameObject mainPlayerPrefab;    
     [SerializeField]
     GameObject enemyPlayerPrefab;
     [SerializeField]
