@@ -55,17 +55,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\NPCPlayer.cs" />
      <Compile Include="Assets\Scripts\Entity.cs" />
      <Compile Include="Assets\Scripts\Hud\base_hud.cs" />
      <Compile Include="Assets\Scripts\Hud\hud_energy.cs" />
      <Compile Include="Assets\Scripts\Hud\hud_health.cs" />
      <Compile Include="Assets\Scripts\Hud\hud_shield.cs" />
+     <Compile Include="Assets\Scripts\NPCPlayer.cs" />
      <Compile Include="Assets\Scripts\Player\MainPlayer.cs" />
      <Compile Include="Assets\Scripts\Player\PlayerCamera.cs" />
      <Compile Include="Assets\Scripts\Player\PlayerMovementManager.cs" />
-     <Compile Include="Assets\SpawnPoint.cs" />
-     <Compile Include="Assets\TCPClientController.cs" />
+     <Compile Include="Assets\Scripts\SpawnPoint.cs" />
+     <Compile Include="Assets\Scripts\TCPClientController.cs" />
  <Reference Include="UnityEngine">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.12f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
  </Reference>

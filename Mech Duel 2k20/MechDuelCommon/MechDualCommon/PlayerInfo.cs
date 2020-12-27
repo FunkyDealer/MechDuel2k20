@@ -12,6 +12,9 @@ namespace MechDuelCommon
         public string Name { get; set; }
         public float X { get; set; }
         public float Y { get; set; }
-        public float Z { get; set; }
+        public float Z { get; set; }  
+        public float rX { get; set; }
+        public float rY { get; set; }
+        public float rZ { get; set; }
     }
 }

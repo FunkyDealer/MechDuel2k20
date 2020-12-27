@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MechDuelCommon;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -55,6 +56,11 @@ public class MainPlayer : Entity
     [SerializeField]
     GameObject hud;
 
+    Vector3 oldPosition;
+    Vector3 oldForward;
+
+    TCPClientController tcpClient;
+
     protected override void Awake()
     {
         alive = true;
@@ -65,6 +71,8 @@ public class MainPlayer : Entity
         canRecoverEnergy = true;
         EnergyRecoverTimer = 0;
         currentArmour = 0;
+
+        tcpClient = GameObject.Find("TCPClientController").GetComponent<TCPClientController>();
     }
 
     // Start is called before the first frame update
@@ -78,6 +86,8 @@ public class MainPlayer : Entity
         onEnergyUpdate(currentEnergy, maxEnergy);
         onShieldUpdate(currentArmour, maxArmour);
 
+        SendPositionInformation();
+        SendRotationInformation();
     }
        
     // Update is called once per frame
@@ -90,6 +100,49 @@ public class MainPlayer : Entity
             recoverEnergy();            
             
         }
+    }
+
+    protected void FixedUpdate()
+    {
+        if (transform.position != oldPosition)
+        {
+            SendPositionInformation();
+        }
+    }
+
+    void SendPositionInformation()
+    {
+            Message m = new Message();
+            m.MessageType = MessageType.PlayerMovement;
+            PlayerInfo info = new PlayerInfo();
+            info.Id = tcpClient.player.Id;
+            info.Name = tcpClient.player.Name;
+            info.X = transform.position.x;
+            info.Y = transform.position.y;
+            info.Z = transform.position.z;
+            info.rX = transform.forward.x;
+            info.rY = transform.forward.y;
+            info.rZ = transform.forward.z;
+            m.PlayerInfo = info;
+            tcpClient.player.SendMessage(m);
+        
+        oldPosition = transform.position;
+    }
+
+    void SendRotationInformation()
+    {
+        Message m = new Message();
+        m.MessageType = MessageType.PlayerMovement;
+        PlayerInfo info = new PlayerInfo();
+        info.Id = tcpClient.player.Id;
+        info.Name = tcpClient.player.Name;
+        info.rX = transform.forward.x;
+        info.rY = transform.forward.y;
+        info.rZ = transform.forward.z;
+        m.PlayerInfo = info;
+        tcpClient.player.SendMessage(m);
+
+        oldForward = transform.forward;
     }
 
     public void spendEnergy(int newEnergy)

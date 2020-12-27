@@ -28,8 +28,6 @@ public class PlayerCamera : MonoBehaviour
     void Start()
     {
 
-
-
         originalRotation = transform.localRotation;
     }
 

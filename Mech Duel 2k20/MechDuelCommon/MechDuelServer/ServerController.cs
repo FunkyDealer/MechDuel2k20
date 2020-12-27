@@ -28,8 +28,6 @@ namespace MechDuelServer
 
             while (true)
             {
-                //try
-                //{
                     if (listener.Pending())
                     {
                         Console.WriteLine("New pending connection");
@@ -52,11 +50,6 @@ namespace MechDuelServer
                                     break;
                             }
                         }
-                //}
-                //catch (Exception)
-                //{
-                //    Console.WriteLine("Error occurred");
-                //}
             }
         }
 
@@ -64,7 +57,7 @@ namespace MechDuelServer
         {
             if (player.DataAvailable())
             {
-                Console.WriteLine("New player position ");
+               // Console.WriteLine("New player position ");
                 Message message = player.ReadMessage();
                 if (message.MessageType == MessageType.PlayerMovement)
                 {
@@ -89,7 +82,6 @@ namespace MechDuelServer
 
             // Process all movements
             SyncPlayerMovements(p);
-
 
             // update game State
             Message msg = new Message();
@@ -153,6 +145,9 @@ namespace MechDuelServer
                     info.X = 0;
                     info.Y = 0;
                     info.Z = 0;
+                    info.rX = 0;
+                    info.rY = 0;
+                    info.rZ = 0;
                     msg.PlayerInfo = info;
 
                     NP.SendMessage(msg);
