@@ -30,6 +30,8 @@ public class TCPClientController : MonoBehaviour
     [SerializeField]
     private List<GameObject> spawnPoints;
 
+    MainPlayer mainPlayer;
+
     void Awake()
     {       
         playersList = new Dictionary<Guid, GameObject>();
@@ -170,8 +172,10 @@ public class TCPClientController : MonoBehaviour
     private void SpawnNewPlayer(Message m)
     {
         GameObject playerGO = Instantiate(enemyPlayerPrefab, new Vector3(m.PlayerInfo.X, m.PlayerInfo.Y, m.PlayerInfo.Z), Quaternion.identity);
-       // playerGO.GetComponent<PlayerUiController>().playerName.text = m.PlayerInfo.Name;
+        // playerGO.GetComponent<PlayerUiController>().playerName.text = m.PlayerInfo.Name;
         playersList.Add(m.PlayerInfo.Id, playerGO);
+        if (mainPlayer != null) mainPlayer.SendMovementInfo();
+        else { Debug.Log("Player was null"); }
     }
 
     private void UpdatePlayerMovement(Message m)
@@ -191,7 +195,10 @@ public class TCPClientController : MonoBehaviour
             a.SetActive(false);
         }
         GameObject p = Instantiate(mainPlayerPrefab, spawnPoints[0].transform.position, Quaternion.identity);
-       // playerGO.GetComponent<PlayerUiController>().playerName.text = player.Name;
+        mainPlayer = p.GetComponent<MainPlayer>();
+        // playerGO.GetComponent<PlayerUiController>().playerName.text = player.Name;
+        if (mainPlayer != null) mainPlayer.SendMovementInfo();
+        else { Debug.Log("Player was null"); }
 
         playersList.Add(player.Id, p);
         player.GameState = GameState.GameStarted;

@@ -83,6 +83,8 @@ namespace MechDuelServer
             // Process all movements
             SyncPlayerMovements(p);
 
+            SyncShots(p);
+
             // update game State
             Message msg = new Message();
             msg.MessageType = MessageType.FinishedSync;
@@ -97,6 +99,23 @@ namespace MechDuelServer
                 if (p.GameState == GameState.GameStarted)
                 {
                     var last = p.MessageList.LastOrDefault(x => x.MessageType == MessageType.PlayerMovement);
+                    if (last != null)
+                    {
+                        Message msg = new Message();
+                        msg.PlayerInfo = last.PlayerInfo;
+                        p.SendMessage(msg);
+                    }
+                }
+            }
+        }
+
+        private void SyncShots(Player player)
+        {
+            foreach (var p in playersList)
+            {
+                if (p.GameState == GameState.GameStarted)
+                {
+                    var last = p.MessageList.LastOrDefault(x => x.MessageType == MessageType.Shoot);
                     if (last != null)
                     {
                         Message msg = new Message();

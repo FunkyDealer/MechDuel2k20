@@ -110,6 +110,12 @@ public class MainPlayer : Entity
         }
     }
 
+    public void SendMovementInfo()
+    {
+        SendPositionInformation();
+        SendRotationInformation();
+    }
+
     void SendPositionInformation()
     {
             Message m = new Message();

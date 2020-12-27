@@ -11,6 +11,7 @@ namespace MechDuelCommon
         PlayerName,
         NewPlayer,
         PlayerMovement,
+        Shoot,
         FinishedSync,
         Information,
         Warning,
