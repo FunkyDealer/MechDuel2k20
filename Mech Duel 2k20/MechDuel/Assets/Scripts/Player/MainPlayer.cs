@@ -59,7 +59,9 @@ public class MainPlayer : Entity
     Vector3 oldPosition;
     Vector3 oldForward;
 
-    TCPClientController tcpClient;
+    public TCPClientController tcpClient;
+
+    public Guid id;
 
     protected override void Awake()
     {

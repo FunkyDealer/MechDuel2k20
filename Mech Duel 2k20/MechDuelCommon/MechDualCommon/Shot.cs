@@ -4,16 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MechDualCommon
+namespace MechDuelCommon
 {
-    class Shot
+    public class Shot
     {
-        float xDir;
-        float yDir;
-        float zDir;
-        float xStart;
-        float yStart;
-        float zStart;
+        public float xDir;
+        public float yDir;
+        public float zDir;
+        public float xStart;
+        public float yStart;
+        public float zStart;
+        public int damage;
+        public Guid id;
 
     }
 }

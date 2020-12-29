@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class NPCPlayer : Entity
 {
-
+    public string nickName;
 
 
     // Start is called before the first frame update

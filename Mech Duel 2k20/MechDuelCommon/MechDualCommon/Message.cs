@@ -10,6 +10,7 @@ namespace MechDuelCommon
     {
         public string Description { get; set; }
         public PlayerInfo PlayerInfo { get; set; }
+        public Shot shot { get; set; }
         public MessageType MessageType { get; set; }
     }
 }

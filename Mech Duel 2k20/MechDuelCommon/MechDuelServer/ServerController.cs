@@ -26,8 +26,11 @@ namespace MechDuelServer
             Console.WriteLine("Server is running");
             Console.WriteLine("Listening on port " + port);
 
+            bool disconnectedPlayers = false;
+
             while (true)
             {
+                
                     if (listener.Pending())
                     {
                         Console.WriteLine("New pending connection");
@@ -48,9 +51,20 @@ namespace MechDuelServer
                                 case GameState.GameStarted:
                                     GameStarted(p);
                                     break;
+                                case GameState.Disconnected:
+                                disconnectedPlayers = Disconnected(p);
+                                    break;
                             }
                         }
+                if (disconnectedPlayers) { RemoveDisconnectedPlayers(); disconnectedPlayers = false; }
+
             }
+        }
+
+        private void RemoveDisconnectedPlayers()
+        {
+            playersList.RemoveAll(x => x.GameState == GameState.Disconnected);
+            
         }
 
         private void GameStarted(Player player)
@@ -59,23 +73,30 @@ namespace MechDuelServer
             {
                // Console.WriteLine("New player position ");
                 Message message = player.ReadMessage();
-                if (message.MessageType == MessageType.PlayerMovement)
+                switch (message.MessageType)
                 {
-                    //players.Where(s => s.GameState == GameState.GameStarted).
-                    //    ToList().ForEach(p => p.SendMessage(message));
-                    foreach (var p in playersList)
-                    {
-                        if (p.GameState == GameState.GameStarted)
+                    case MessageType.PlayerMovement:
+                    case MessageType.Shoot:
+                    case MessageType.Died:
+                        foreach (var p in playersList) //Send message to each player about what's happening
                         {
-                            p.SendMessage(message);
+                            if (p.GameState == GameState.GameStarted)
+                            {
+                                p.SendMessage(message);
+                            }
                         }
-                    }
+                        break;
+                    case MessageType.Disconnected: //Player is switched to disconnected state, next while loop will take case of it
+                        player.GameState = GameState.Disconnected;
+                        //Disconnected(player);
+                        break;
+                    default:
+                        break;
                 }
             }
         }
 
-
-        private void Sync(Player p)
+        private void Sync(Player p) //Sync player that are connecting
         {
             // Process all new players
             SyncNewPlayers(p);
@@ -83,7 +104,10 @@ namespace MechDuelServer
             // Process all movements
             SyncPlayerMovements(p);
 
+            // process Shots
             SyncShots(p);
+
+            SyncDeaths(p);
 
             // update game State
             Message msg = new Message();
@@ -92,40 +116,11 @@ namespace MechDuelServer
             p.GameState = GameState.GameStarted;
         }
 
-        private void SyncPlayerMovements(Player player)
+        private void SyncDeaths(Player p)
         {
-            foreach (var p in playersList)
-            {
-                if (p.GameState == GameState.GameStarted)
-                {
-                    var last = p.MessageList.LastOrDefault(x => x.MessageType == MessageType.PlayerMovement);
-                    if (last != null)
-                    {
-                        Message msg = new Message();
-                        msg.PlayerInfo = last.PlayerInfo;
-                        p.SendMessage(msg);
-                    }
-                }
-            }
-        }
 
-        private void SyncShots(Player player)
-        {
-            foreach (var p in playersList)
-            {
-                if (p.GameState == GameState.GameStarted)
-                {
-                    var last = p.MessageList.LastOrDefault(x => x.MessageType == MessageType.Shoot);
-                    if (last != null)
-                    {
-                        Message msg = new Message();
-                        msg.PlayerInfo = last.PlayerInfo;
-                        p.SendMessage(msg);
-                    }
-                }
-            }
         }
-
+        
 
         private void SyncNewPlayers(Player player)
         {
@@ -143,11 +138,72 @@ namespace MechDuelServer
             }
         }
 
+        private void SyncPlayerMovements(Player player)
+        {
+            foreach (Player p in playersList)
+            {
+                if (p.GameState == GameState.GameStarted)
+                {
+                    Message last = p.MessageList.LastOrDefault(x => x.MessageType == MessageType.PlayerMovement);
+                    if (last != null)
+                    {
+                        Message msg = new Message();
+                        msg.PlayerInfo = last.PlayerInfo;
+                        p.SendMessage(msg);
+                    }
+                }
+            }
+        }
+
+        private void SyncShots(Player player)
+        {
+            foreach (Player p in playersList)
+            {
+                if (p.GameState == GameState.GameStarted)
+                {
+                    Message last = p.MessageList.LastOrDefault(x => x.MessageType == MessageType.Shoot);
+                    if (last != null)
+                    {
+                        Message msg = new Message();
+                        msg.shot = last.shot;
+                        Console.WriteLine("shot fired");
+                        p.SendMessage(msg);
+                    }
+                }
+            }
+        }
+
+        private bool Disconnected(Player p) //Send message to players that X player disconnected
+        {
+            if (p.DataAvailable())
+            {
+                Console.WriteLine($"Player {p.Name} has not disconnected");
+                p.GameState = GameState.Sync;
+                return false;
+            }
+            else
+            {
+                Console.WriteLine($"Player {p.Name} has disconnected");
+                Message msg = new Message();
+                msg.MessageType = MessageType.Disconnected;
+                PlayerInfo info = new PlayerInfo();
+                info.Id = p.Id;
+                info.Name = p.Name;
+
+                foreach (Player NP in playersList)
+                {
+                    NP.SendMessage(msg);
+                }
+                return true;
+            }
+        }
+
+
         private void Connecting(Player p)
         {
             if (p.DataAvailable())
             {
-                Console.WriteLine("New player registering");
+                
                 Player playerMsg = p.ReadPlayer();
                 p.Name = playerMsg.Name;
 
@@ -170,9 +226,10 @@ namespace MechDuelServer
                     msg.PlayerInfo = info;
 
                     NP.SendMessage(msg);
-                    NP.MessageList.Add(msg);
+                    NP.MessageList.Add(msg);                    
                 }
                 p.GameState = GameState.Sync;
+                Console.WriteLine($"New player registered. Nick: {p.Name}");
             }
         }
 

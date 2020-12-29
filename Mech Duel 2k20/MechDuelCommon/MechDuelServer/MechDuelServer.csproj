@@ -54,9 +54,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MechDualCommon\MechDualCommon.csproj">
+    <ProjectReference Include="..\MechDualCommon\MechDuelCommon.csproj">
       <Project>{3A607DA8-A9D9-414E-B5B4-F707ECCC64B2}</Project>
-      <Name>MechDualCommon</Name>
+      <Name>MechDuelCommon</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MechDuelServer", "MechDuelServer\MechDuelServer.csproj", "{842D32B8-82B3-491A-8B62-A59FFC34CA37}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MechDualCommon", "MechDualCommon\MechDualCommon.csproj", "{3A607DA8-A9D9-414E-B5B4-F707ECCC64B2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MechDuelCommon", "MechDualCommon\MechDuelCommon.csproj", "{3A607DA8-A9D9-414E-B5B4-F707ECCC64B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

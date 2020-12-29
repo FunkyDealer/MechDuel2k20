@@ -32,6 +32,9 @@ public class TCPClientController : MonoBehaviour
 
     MainPlayer mainPlayer;
 
+    [SerializeField]
+    ShotsManager shotsManager;
+
     void Awake()
     {       
         playersList = new Dictionary<Guid, GameObject>();
@@ -43,6 +46,11 @@ public class TCPClientController : MonoBehaviour
     void Start()
     {
 
+    }
+
+    void OnDestroy()
+    {
+        Disconnect();
     }
 
     void Update()
@@ -103,8 +111,28 @@ public class TCPClientController : MonoBehaviour
         {
             Message message = player.ReadMessage();
 
-            if (message.MessageType == MessageType.NewPlayer) SpawnNewPlayer(message);
-            else if (message.MessageType == MessageType.PlayerMovement) UpdatePlayerMovement(message);
+            switch (message.MessageType)
+            {
+                case MessageType.PlayerName:
+                    break;
+                case MessageType.NewPlayer:
+                    SpawnNewPlayer(message);
+                    break;
+                case MessageType.PlayerMovement:
+                    UpdatePlayerMovement(message);
+                    break;
+                case MessageType.Shoot:
+                    UpdateShots(message);
+                    break;
+                case MessageType.Disconnected:
+                    UpdateDisconnects(message);
+                    break;
+                case MessageType.Died:
+
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
@@ -156,14 +184,17 @@ public class TCPClientController : MonoBehaviour
                 case MessageType.PlayerMovement:
                     UpdatePlayerMovement(messageReceived);
                     break;
+                case MessageType.Shoot:
+                    UpdateShots(messageReceived);
+                    break;
                 case MessageType.FinishedSync:
                     FinishSync(messageReceived);
                     break;
-                case MessageType.Information:
+                case MessageType.Disconnected:
+                    UpdateDisconnects(messageReceived);
                     break;
-                case MessageType.Warning:
-                    break;
-                case MessageType.Error:
+                case MessageType.Died:
+
                     break;
             }
         }
@@ -187,6 +218,22 @@ public class TCPClientController : MonoBehaviour
         }
     }
 
+    private void UpdateShots(Message m)
+    {
+        Shot s = m.shot;
+        Vector3 position = new Vector3(s.xStart, s.yStart, s.zStart);
+        Vector3 direction = new Vector3(s.xDir, s.yDir, s.zDir);
+
+        Entity shooter = null;
+
+        foreach (var p in playersList)
+        {
+            if (p.Key == m.shot.id) shooter = p.Value.GetComponent<Entity>();
+        }
+
+        shotsManager.SpawnLaser(position, direction, m.shot.damage, shooter);
+    }
+
     private void FinishSync(Message m)
     {
         Debug.Log("Finishing sync");
@@ -197,11 +244,38 @@ public class TCPClientController : MonoBehaviour
         GameObject p = Instantiate(mainPlayerPrefab, spawnPoints[0].transform.position, Quaternion.identity);
         mainPlayer = p.GetComponent<MainPlayer>();
         // playerGO.GetComponent<PlayerUiController>().playerName.text = player.Name;
-        if (mainPlayer != null) mainPlayer.SendMovementInfo();
+        if (mainPlayer != null)
+        {
+            mainPlayer.SendMovementInfo();
+            mainPlayer.id = player.Id;
+        }
         else { Debug.Log("Player was null"); }
 
         playersList.Add(player.Id, p);
         player.GameState = GameState.GameStarted;
+    }
+
+    private void UpdateDisconnects(Message m)
+    {
+        if (playersList.ContainsKey(m.PlayerInfo.Id))
+        {
+            Destroy(playersList[m.PlayerInfo.Id].transform.gameObject);
+            Debug.Log($"Player {playersList[m.PlayerInfo.Id].name} Disconnected");
+        }
+        playersList.Remove(m.PlayerInfo.Id);
+        
+    }
+
+
+    private void Disconnect()
+    {
+        Message m = new Message();
+        m.MessageType = MessageType.Disconnected;
+        PlayerInfo info = new PlayerInfo();
+        info.Id = player.Id;
+        info.Name = player.Name;        
+        m.PlayerInfo = info;
+        player.SendMessage(m);
     }
 
 }
