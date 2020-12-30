@@ -36,7 +36,8 @@ public class TCPClientController : MonoBehaviour
     ShotsManager shotsManager;
 
     void Awake()
-    {       
+    {      
+
         playersList = new Dictionary<Guid, GameObject>();
         player = new Player();
         player.GameState = GameState.Disconnected;
@@ -50,6 +51,7 @@ public class TCPClientController : MonoBehaviour
 
     void OnDestroy()
     {
+        if (player.TcpClient.Connected)
         Disconnect();
     }
 
@@ -74,7 +76,7 @@ public class TCPClientController : MonoBehaviour
                     break;
                 case GameState.GameStarted:
                     // Debug.Log("Game Started");
-                    GameStarted();
+                    GameStarted();                    
                     break;
                 default:
                     break;
@@ -103,8 +105,6 @@ public class TCPClientController : MonoBehaviour
         }
     }
 
-
-
     private void GameStarted()
     {
         if (player.DataAvailable())
@@ -126,6 +126,9 @@ public class TCPClientController : MonoBehaviour
                     break;
                 case MessageType.Disconnected:
                     UpdateDisconnects(message);
+                    break;
+                case MessageType.gotHit:
+
                     break;
                 case MessageType.Died:
 
@@ -193,11 +196,58 @@ public class TCPClientController : MonoBehaviour
                 case MessageType.Disconnected:
                     UpdateDisconnects(messageReceived);
                     break;
+                case MessageType.gotHit:
+
+                    break;
                 case MessageType.Died:
 
                     break;
             }
         }
+    }
+
+    private void FinishSync(Message m)
+    {
+        Debug.Log("Finishing sync");
+        foreach (var a in ConnectionUI)
+        {
+            a.SetActive(false);
+        }
+        GameObject p = Instantiate(mainPlayerPrefab, spawnPoints[0].transform.position, Quaternion.identity);
+        mainPlayer = p.GetComponent<MainPlayer>();
+        
+        // playerGO.GetComponent<PlayerUiController>().playerName.text = player.Name;
+        if (mainPlayer != null)
+        {
+            mainPlayer.SendMovementInfo();
+            mainPlayer.id = player.Id;
+            mainPlayer.nickName = player.Name;
+        }
+        else { Debug.Log("Player was null"); }
+
+        playersList.Add(player.Id, p);
+        player.GameState = GameState.GameStarted;
+    }
+
+    private void UpdateDisconnects(Message m)
+    {
+        if (playersList.ContainsKey(m.PlayerInfo.Id))
+        {
+            Destroy(playersList[m.PlayerInfo.Id].transform.gameObject);
+            Debug.Log($"Player {playersList[m.PlayerInfo.Id].name} Disconnected");
+        }
+        playersList.Remove(m.PlayerInfo.Id);        
+    }
+
+    private void Disconnect()
+    {
+        Message m = new Message();
+        m.MessageType = MessageType.Disconnected;
+        PlayerInfo info = new PlayerInfo();
+        info.Id = player.Id;
+        info.Name = player.Name;        
+        m.PlayerInfo = info;        
+        player.SendMessage(m);
     }
 
     private void SpawnNewPlayer(Message m)
@@ -207,6 +257,10 @@ public class TCPClientController : MonoBehaviour
         playersList.Add(m.PlayerInfo.Id, playerGO);
         if (mainPlayer != null) mainPlayer.SendMovementInfo();
         else { Debug.Log("Player was null"); }
+
+        NPCPlayer p = enemyPlayerPrefab.GetComponent<NPCPlayer>();
+        p.nickName = m.PlayerInfo.Name;
+        p.id = m.PlayerInfo.Id;
     }
 
     private void UpdatePlayerMovement(Message m)
@@ -228,54 +282,28 @@ public class TCPClientController : MonoBehaviour
 
         foreach (var p in playersList)
         {
-            if (p.Key == m.shot.id) shooter = p.Value.GetComponent<Entity>();
+            if (p.Key == m.shot.shooter) shooter = p.Value.GetComponent<Entity>();
         }
 
         shotsManager.SpawnLaser(position, direction, m.shot.damage, shooter);
     }
 
-    private void FinishSync(Message m)
+    private void UpdateHits(Message m)
     {
-        Debug.Log("Finishing sync");
-        foreach (var a in ConnectionUI)
+        HitInfo HI = m.hitInfo;
+
+        if (playersList.ContainsKey(HI.hitId))
         {
-            a.SetActive(false);
+            NPCPlayer p = playersList[HI.hitId].GetComponent<NPCPlayer>();
+
+            Entity shooter = null;
+            if (HI.shooter != null)
+            {
+                if (playersList.ContainsKey(HI.shooter)) shooter = playersList[HI.hitId].GetComponent<Entity>();
+            }
+
+            p.ReceiveDamage(HI.healthDamage, HI.shieldDamage, shooter);
         }
-        GameObject p = Instantiate(mainPlayerPrefab, spawnPoints[0].transform.position, Quaternion.identity);
-        mainPlayer = p.GetComponent<MainPlayer>();
-        // playerGO.GetComponent<PlayerUiController>().playerName.text = player.Name;
-        if (mainPlayer != null)
-        {
-            mainPlayer.SendMovementInfo();
-            mainPlayer.id = player.Id;
-        }
-        else { Debug.Log("Player was null"); }
-
-        playersList.Add(player.Id, p);
-        player.GameState = GameState.GameStarted;
-    }
-
-    private void UpdateDisconnects(Message m)
-    {
-        if (playersList.ContainsKey(m.PlayerInfo.Id))
-        {
-            Destroy(playersList[m.PlayerInfo.Id].transform.gameObject);
-            Debug.Log($"Player {playersList[m.PlayerInfo.Id].name} Disconnected");
-        }
-        playersList.Remove(m.PlayerInfo.Id);
-        
-    }
-
-
-    private void Disconnect()
-    {
-        Message m = new Message();
-        m.MessageType = MessageType.Disconnected;
-        PlayerInfo info = new PlayerInfo();
-        info.Id = player.Id;
-        info.Name = player.Name;        
-        m.PlayerInfo = info;
-        player.SendMessage(m);
     }
 
 }

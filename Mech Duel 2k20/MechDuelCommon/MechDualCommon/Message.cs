@@ -12,5 +12,6 @@ namespace MechDuelCommon
         public PlayerInfo PlayerInfo { get; set; }
         public Shot shot { get; set; }
         public MessageType MessageType { get; set; }
+        public HitInfo hitInfo { get; set; }
     }
 }

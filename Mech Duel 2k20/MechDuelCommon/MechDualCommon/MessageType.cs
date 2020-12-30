@@ -12,6 +12,7 @@ namespace MechDuelCommon
         NewPlayer,
         PlayerMovement,
         Shoot,
+        gotHit,
         Died,
         FinishedSync,
         Disconnected,

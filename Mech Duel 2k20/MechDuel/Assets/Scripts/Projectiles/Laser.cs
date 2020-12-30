@@ -12,7 +12,7 @@ public class Laser : HitScanProjectile
     private float LaserSpeed;
 
     float laserLenght;
-
+    
 
     protected override void Awake()
     {

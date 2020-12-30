@@ -1,12 +1,19 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Entity : MonoBehaviour
 {
+    public string nickName;
+    public Guid id;
     protected int currentHealth;
     [SerializeField]
     protected int maxHealth;
+
+    protected int currentArmour; //Armor for damage mitigation
+    [SerializeField]
+    protected int maxArmour;
 
     protected virtual void Awake()
     {
@@ -30,11 +37,10 @@ public class Entity : MonoBehaviour
     }
 
 
-    public virtual void getDamage(int damage)
+    public virtual void getDamage(int damage, Entity entity)
     {
         currentHealth -= damage;
         checkHealth();
-
     }
 
     protected virtual void checkHealth()

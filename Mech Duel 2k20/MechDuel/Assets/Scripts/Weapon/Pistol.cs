@@ -72,7 +72,7 @@ public class Pistol : Weapon
         Message m = new Message();
         m.MessageType = MessageType.Shoot;
         Shot shot = new Shot();
-        shot.id = manager.GetPlayer.tcpClient.player.Id;        
+        shot.shooter = manager.GetPlayer.tcpClient.player.Id;        
         shot.xStart = s.transform.position.x;
         shot.yStart = s.transform.position.y;
         shot.zStart = s.transform.position.z;

@@ -15,7 +15,7 @@ namespace MechDuelCommon
         public float yStart;
         public float zStart;
         public int damage;
-        public Guid id;
+        public Guid shooter;
 
     }
 }

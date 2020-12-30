@@ -34,7 +34,7 @@ public class Projectile : MonoBehaviour
 
     protected void damageEntity()
     {
-      //  hitEntity.ReceiveDamage(damage, shooter);
+      hitEntity.getDamage(damage, shooter);
 
     }
 }

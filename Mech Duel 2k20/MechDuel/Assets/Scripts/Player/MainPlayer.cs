@@ -6,10 +6,6 @@ using UnityEngine;
 
 public class MainPlayer : Entity
 {
-    int currentArmour; //Armor for damage mitigation
-    [SerializeField]
-    int maxArmour;
-
     public int currentEnergy; //enemy for sprinting
     [SerializeField]
     int maxEnergy;
@@ -61,8 +57,6 @@ public class MainPlayer : Entity
 
     public TCPClientController tcpClient;
 
-    public Guid id;
-
     protected override void Awake()
     {
         alive = true;
@@ -75,6 +69,7 @@ public class MainPlayer : Entity
         currentArmour = 0;
 
         tcpClient = GameObject.Find("TCPClientController").GetComponent<TCPClientController>();
+       
     }
 
     // Start is called before the first frame update
@@ -190,15 +185,17 @@ public class MainPlayer : Entity
         }
     }
 
-    public override void getDamage(int damage)
+    public override void getDamage(int damage, Entity shooter)
     {
         // base.getDamage(damage);
+        int dmgHealth = damage;
+        int dmgShield = 0;
 
         if (currentArmour < 0)
         { //If player has shield
-            int dmgHealth = damage / 5; //damage receive is 1/5
+            dmgHealth = damage / 5; //damage receive is 1/5
             currentHealth -= dmgHealth;
-            int dmgShield = (damage - damage / 5) / 2; //shield receives 80% / 2 damage
+            dmgShield = (damage - damage / 5) / 2; //shield receives 80% / 2 damage
             currentArmour -= dmgShield;
             if (currentArmour > 0) currentArmour = 0;
         }
@@ -209,9 +206,25 @@ public class MainPlayer : Entity
 
         checkHealth();
 
+        SendHit(dmgHealth, dmgShield, shooter);
+
         onHealthUpdate(currentHealth, maxHealth);
         onShieldUpdate(currentArmour, maxArmour);
 
+    }
+
+    private void SendHit(int HealthDam,int shieldDam, Entity shooter)
+    {
+        Message m = new Message();
+        m.MessageType = MessageType.PlayerMovement;
+        HitInfo info = new HitInfo();
+        info.hitId = id;
+        info.name = nickName;
+        info.healthDamage = HealthDam;
+        info.shieldDamage = shieldDam;
+        info.shooter = shooter.id;
+        m.hitInfo = info;
+        tcpClient.player.SendMessage(m);
     }
 
     public override void Die()
