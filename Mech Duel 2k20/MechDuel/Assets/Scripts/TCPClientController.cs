@@ -35,8 +35,11 @@ public class TCPClientController : MonoBehaviour
     [SerializeField]
     ShotsManager shotsManager;
 
+    public bool gameStarted;
+
     void Awake()
-    {      
+    {
+        gameStarted = false;
 
         playersList = new Dictionary<Guid, GameObject>();
         player = new Player();
@@ -46,7 +49,7 @@ public class TCPClientController : MonoBehaviour
 
     void Start()
     {
-
+        
     }
 
     void OnDestroy()
@@ -86,6 +89,7 @@ public class TCPClientController : MonoBehaviour
 
     public void StartTcpClient()
     {
+        gameStarted = false;
         player.TcpClient.BeginConnect(IPAddress.Parse(IpAddress), Port, AcceptConnection, player.TcpClient);
         player.GameState = GameState.Connecting;
     }
@@ -133,10 +137,20 @@ public class TCPClientController : MonoBehaviour
                 case MessageType.Died:
 
                     break;
+                case MessageType.GameStart:
+                    StartGame(message);
+                    break;
                 default:
                     break;
             }
         }
+    }
+
+    private void StartGame(Message m)
+    {
+        gameStarted = true;
+
+        Debug.Log("Game has Started");
     }
 
 
@@ -160,6 +174,8 @@ public class TCPClientController : MonoBehaviour
             Player playerJson = player.ReadPlayer();
             player.Id = playerJson.Id;
             player.Name = playerNameInputText.text;
+            player.score = 0;
+            player.ready = false;
 
             player.SendPlayer(player);
             player.GameState = GameState.Connected;
@@ -202,6 +218,24 @@ public class TCPClientController : MonoBehaviour
                 case MessageType.Died:
 
                     break;
+                case MessageType.Information:
+                    GetGameState(messageReceived);
+                    break;
+            }
+        }
+    }
+
+    private void GetGameState(Message m)
+    {
+        GameInfo info = m.gameInfo;
+        gameStarted = info.gameStarted;
+
+        foreach (var p in playersList)
+        {
+            if (info.readyPlayers.Contains(p.Key))
+            {
+                Entity e = p.Value.GetComponent<Entity>();
+                e.ready = true;
             }
         }
     }

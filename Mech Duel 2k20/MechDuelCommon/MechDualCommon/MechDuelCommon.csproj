@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GameInfo.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="HitInfo.cs" />
     <Compile Include="Message.cs" />

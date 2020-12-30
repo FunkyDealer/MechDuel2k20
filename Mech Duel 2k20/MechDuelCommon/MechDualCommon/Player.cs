@@ -9,7 +9,9 @@ namespace MechDuelCommon
     public class Player
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }    
+        public string Name { get; set; }   
+        public bool ready { get; set; }
+        public int score { get; set; }
         [JsonIgnore]
         public TcpClient TcpClient { get; set; }
         public GameState GameState { get; set; }

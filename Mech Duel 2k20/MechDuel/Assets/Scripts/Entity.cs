@@ -15,10 +15,12 @@ public class Entity : MonoBehaviour
     [SerializeField]
     protected int maxArmour;
 
+    public bool ready;
+
     protected virtual void Awake()
     {
         currentHealth = maxHealth;
-
+        ready = false;
   
     }
 

@@ -94,9 +94,40 @@ public class MainPlayer : Entity
 
         if (alive && inControl)
         {
-            recoverEnergy();            
+            recoverEnergy();
+            SetReady();
+        }
+    }
+
+    private void SetReady()
+    {
+        if (!tcpClient.gameStarted)
+        {
+            if (Input.GetButtonDown("Ready"))
+            {
+                if (ready) { ready = false; }
+                else { ready = true; }
+                SendReadyInfo();
+            }
             
         }
+    }
+
+    private void SendReadyInfo()
+    {
+        Message m = new Message();
+        if (ready) m.MessageType = MessageType.PlayerReady;
+        else m.MessageType = MessageType.PlayerUnready;
+
+        PlayerInfo info = new PlayerInfo();
+        tcpClient.player.ready = ready;
+
+        info.Id = tcpClient.player.Id;
+        info.Name = tcpClient.player.Name;
+
+        m.PlayerInfo = info;
+
+        tcpClient.player.SendMessage(m);
     }
 
     protected void FixedUpdate()

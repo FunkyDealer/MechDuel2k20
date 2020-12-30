@@ -17,6 +17,9 @@ namespace MechDuelServer
             playersList = new List<Player>();
         }
 
+        private bool gameStarted;
+        
+
         public void StartServer()
         {
             int port = 7777;
@@ -27,14 +30,19 @@ namespace MechDuelServer
             Console.WriteLine("Listening on port " + port);
 
             bool disconnectedPlayers = false;
+            gameStarted = false;
 
             while (true)
             {                
                     if (listener.Pending())
                     {
                         Console.WriteLine("New pending connection");
-                        listener.BeginAcceptTcpClient(AcceptClient, listener);
-                    }
+                    listener.BeginAcceptTcpClient(AcceptClient, listener);
+                    //if (playersList.Count < 2) listener.BeginAcceptTcpClient(AcceptClient, listener);
+                    //else listener.
+
+                }
+
                 if (playersList.Count > 0)
                 {
                     foreach (var p in playersList)
@@ -92,24 +100,73 @@ namespace MechDuelServer
                         player.GameState = GameState.Disconnected;
                         //Disconnected(player);
                         break;
+                    case MessageType.PlayerReady:
+                    case MessageType.PlayerUnready:
+                        PlayerReadyStatus(player, message);
+                        break;
                     default:
                         break;
                 }
             }
         }
 
+        private void PlayerReadyStatus(Player p, Message m)
+        {
+            if (m.MessageType == MessageType.PlayerReady) { p.ready = true; Console.WriteLine($"player {p.Name} is now Ready"); }
+            else if (m.MessageType == MessageType.PlayerUnready) { p.ready = false; Console.WriteLine($"player {p.Name} is no longer Ready"); }
+                       
+            foreach (var NP in playersList) //Send message to each player about what's happening
+            {
+                if (NP.GameState == GameState.GameStarted)
+                {
+                    NP.SendMessage(m);
+                }
+            }
+
+            CheckIfGameCanStart();
+        }
+
+        private void CheckIfGameCanStart()
+        {
+            if (playersList.Count > 1)
+            {
+                bool areAllPlayersReady = true;
+
+                foreach (var p in playersList) if (!p.ready) areAllPlayersReady = false;
+
+                if (areAllPlayersReady)
+                {
+                    gameStarted = true;
+                    Console.WriteLine("All Players are Ready, game is Starting");
+                    foreach (var p in playersList)
+                    {
+                        //Message that game is Read to start;
+                        Message m = new Message();
+                        m.MessageType = MessageType.GameStart;
+
+                        p.SendMessage(m);
+                    }
+                }
+            }
+        }
+
         private void Sync(Player p) //Sync player that are connecting
         {
+           
+
             // Process all new players
             SyncNewPlayers(p);
 
             // Process all movements
             SyncPlayerMovements(p);
 
+            SendGameInfo(p);
+
             // process Shots
             SyncShots(p);
 
             SyncDeaths(p);
+
 
             // update game State
             Message msg = new Message();
@@ -122,7 +179,34 @@ namespace MechDuelServer
         {
 
         }
-        
+
+        private void SendGameInfo(Player p)
+        {
+            Message m = new Message();
+            m.MessageType = MessageType.Information;
+            GameInfo info = new GameInfo();
+            info.gameStarted = gameStarted;
+            info.readyPlayers = ReadyPlayers();
+            
+            p.SendMessage(m);
+        }
+
+        private List<Guid> ReadyPlayers()
+        {          
+            if (playersList.Count > 0)
+            {
+                List<Guid> readyPlayers = new List<Guid>();
+                foreach (var p in playersList)
+                {
+                    if (p.ready) readyPlayers.Add(p.Id);
+                }
+                return readyPlayers;
+            }
+            else
+            {
+                return null;
+            }
+        }        
 
         private void SyncNewPlayers(Player player)
         {
@@ -168,7 +252,7 @@ namespace MechDuelServer
                     {
                         Message msg = new Message();
                         msg.shot = last.shot;
-                        Console.WriteLine("shot fired");
+                        //Console.WriteLine("shot fired");
                         p.SendMessage(msg);
                     }
                 }
@@ -247,6 +331,8 @@ namespace MechDuelServer
                 p.MessageList = new List<Message>();
                 p.Id = new Guid();
                 p.Id = Guid.NewGuid();
+                p.score = 0;
+                p.ready = false;
                 p.GameState = GameState.Connecting;
                 p.TcpClient = client;
                 playersList.Add(p); 

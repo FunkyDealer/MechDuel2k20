@@ -49,7 +49,7 @@ public class Laser : HitScanProjectile
     {
         lr.SetPosition(0, start);
 
-        // Bit shift the index of the layer (8) to get a bit mask
+        // Bit shift the index of the layer (9) to get a bit mask
         int layerMask = 1 << 9;
 
         layerMask = ~layerMask;
