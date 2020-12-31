@@ -192,6 +192,7 @@ public class TCPClientController : MonoBehaviour
             player.Name = playerNameInputText.text;
             player.score = 0;
             player.ready = false;
+            player.alive = false;
 
             player.SendPlayer(player);
             player.GameState = GameState.Connected;
@@ -236,6 +237,9 @@ public class TCPClientController : MonoBehaviour
                     break;
                 case MessageType.Information:
                     GetGameState(messageReceived);
+                    break;
+                case MessageType.Spawned:
+                    SpawnOtherPlayer(messageReceived);
                     break;
             }
         }
@@ -316,8 +320,8 @@ public class TCPClientController : MonoBehaviour
         NPCPlayer p = playerGO.GetComponent<NPCPlayer>();
         p.nickName = m.PlayerInfo.Name;
         p.id = m.PlayerInfo.Id;
-        p.alive = false;
-        playerGO.SetActive(false);
+        p.alive = m.PlayerInfo.alive;
+        playerGO.SetActive(m.PlayerInfo.alive);
     }   
 
     private void UpdatePlayerMovement(Message m)

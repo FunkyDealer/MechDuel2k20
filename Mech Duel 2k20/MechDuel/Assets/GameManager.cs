@@ -80,6 +80,7 @@ public class GameManager : MonoBehaviour
         PlayerInfo info = new PlayerInfo();
         info.Id = e.id;
         info.Name = e.nickName;
+        info.alive = true;
         info.X = p.transform.position.x;
         info.Y = p.transform.position.y;
         info.Z = p.transform.position.z;
@@ -94,7 +95,6 @@ public class GameManager : MonoBehaviour
 
     public void SpawnEnemyPlayer(GameObject o, Vector3 pos, Vector3 rotation)
     {
-
         o.SetActive(true);
         o.transform.position = pos;
         o.transform.forward = rotation;
@@ -103,7 +103,6 @@ public class GameManager : MonoBehaviour
     private Vector3 SelectSpawnPoint(int max)
     {
         int spawnPoint = Random.Range(0, max);
-
         if (spawnPoints[spawnPoint].CanSpawn()) return spawnPoints[spawnPoint].spawnPos;
         else return SelectSpawnPoint(max);
     }

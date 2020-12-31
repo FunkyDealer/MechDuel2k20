@@ -10,6 +10,7 @@ namespace MechDuelCommon
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+        public bool alive { get; set; }
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }  

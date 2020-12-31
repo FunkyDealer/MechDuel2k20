@@ -119,9 +119,9 @@ namespace MechDuelServer
             Console.WriteLine($"Player {p.Name} is Spawning");
             foreach (var NP in playersList)
             {
-                if (p.GameState == GameState.GameStarted)
+                if (NP.GameState == GameState.GameStarted)
                 {
-                    p.SendMessage(m);
+                    NP.SendMessage(m);
                 }
             }
         }
@@ -169,17 +169,12 @@ namespace MechDuelServer
         private void Sync(Player p) //Sync player that are connecting
         {         
             // Process all new players
-            SyncNewPlayers(p);
+            SyncOtherPlayers(p);
 
             // Process all movements
             SyncPlayerMovements(p);
 
             SendGameInfo(p);
-
-            // process Shots
-            SyncShots(p);
-
-            SyncDeaths(p);
 
             // update game State
             Message msg = new Message();
@@ -221,7 +216,7 @@ namespace MechDuelServer
             }
         }        
 
-        private void SyncNewPlayers(Player player)
+        private void SyncOtherPlayers(Player player)
         {
             foreach (var p in playersList)
             {
@@ -231,6 +226,8 @@ namespace MechDuelServer
                     m.MessageType = MessageType.NewPlayer;
                     PlayerInfo info = p.MessageList.FirstOrDefault(x => x.MessageType == MessageType.NewPlayer).PlayerInfo;
                     m.PlayerInfo = info;
+                    m.PlayerInfo.alive = p.alive;
+                    
 
                     player.SendMessage(m);
                 }
@@ -247,8 +244,9 @@ namespace MechDuelServer
                     if (last != null)
                     {
                         Message msg = new Message();
+                        msg.MessageType = MessageType.PlayerMovement;
                         msg.PlayerInfo = last.PlayerInfo;
-                        p.SendMessage(msg);
+                        player.SendMessage(msg);
                     }
                 }
             }
@@ -300,8 +298,7 @@ namespace MechDuelServer
         private void Connecting(Player p)
         {
             if (p.DataAvailable())
-            {
-                
+            {                
                 Player playerMsg = p.ReadPlayer();
                 p.Name = playerMsg.Name;
 
@@ -316,11 +313,12 @@ namespace MechDuelServer
                     info.Id = p.Id;
                     info.Name = p.Name;
                     info.X = 0;
-                    info.Y = 0;
+                    info.Y = -10;
                     info.Z = 0;
                     info.rX = 0;
                     info.rY = 0;
                     info.rZ = 0;
+                    info.alive = p.alive;
                     msg.PlayerInfo = info;
 
                     NP.SendMessage(msg);
@@ -329,6 +327,17 @@ namespace MechDuelServer
                 p.GameState = GameState.Sync;
                 Console.WriteLine($"New player registered. Nick: {p.Name}");
             }
+        }
+
+        private Player GetPlayer(Guid id)
+        {
+            Player player = null;
+            foreach (var p in playersList)
+            {
+                if (p.Id == id) player = p;
+            }
+
+            return player;
         }
 
         private void AcceptClient(IAsyncResult result)
