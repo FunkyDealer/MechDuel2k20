@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4830922326822529870}
   m_Layer: 0
   m_Name: EnemyPlayer
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -108,8 +108,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a86ca6bf76cf4a9438b406a4e2a31154, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
   nickName: 
+  score: 0
+  maxHealth: 100
+  maxArmour: 0
+  ready: 0
 --- !u!1 &2262785219975470198
 GameObject:
   m_ObjectHideFlags: 0

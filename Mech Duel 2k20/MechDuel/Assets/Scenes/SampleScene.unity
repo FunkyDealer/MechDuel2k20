@@ -1125,18 +1125,77 @@ Transform:
   m_Father: {fileID: 899462352}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1394229384 stripped
+--- !u!1 &1198898587
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 4505489185807450075, guid: c349d03dd1e10a74f9ccb102ab4ea0b3,
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1198898589}
+  - component: {fileID: 1198898588}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1198898588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1198898587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6579579ef28981948af15ae4b4a18131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameStarted: 0
+  spawnPoints:
+  - {fileID: 1569056335}
+  - {fileID: 1394229385}
+--- !u!4 &1198898589
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1198898587}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2, y: 11.099131, z: 11.577196}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 9
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1394229385 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3235298360101958512, guid: c349d03dd1e10a74f9ccb102ab4ea0b3,
     type: 3}
   m_PrefabInstance: {fileID: 1660924603}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1569056334 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 4505489185807450075, guid: c349d03dd1e10a74f9ccb102ab4ea0b3,
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3684f1ac4be3c4e48951ea0b6c698752, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1569056335 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3235298360101958512, guid: c349d03dd1e10a74f9ccb102ab4ea0b3,
     type: 3}
   m_PrefabInstance: {fileID: 5176250558611410263}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3684f1ac4be3c4e48951ea0b6c698752, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1631819878
 GameObject:
   m_ObjectHideFlags: 0
@@ -1934,10 +1993,8 @@ MonoBehaviour:
   ConnectionUI:
   - {fileID: 1797127773}
   - {fileID: 722131914}
-  spawnPoints:
-  - {fileID: 1569056334}
-  - {fileID: 1394229384}
   shotsManager: {fileID: 204771892}
+  gameManager: {fileID: 1198898588}
 --- !u!4 &2035928439
 Transform:
   m_ObjectHideFlags: 0

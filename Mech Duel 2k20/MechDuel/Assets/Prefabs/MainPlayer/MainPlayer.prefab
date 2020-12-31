@@ -147,7 +147,7 @@ GameObject:
   - component: {fileID: 8297909372633956840}
   m_Layer: 0
   m_Name: MainPlayer
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -241,14 +241,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nickName: 
+  score: 0
   maxHealth: 100
   maxArmour: 100
+  ready: 0
   currentEnergy: 100
   maxEnergy: 100
   inControl: 1
   EnergyRecoverDelay: 0.3
   hud: {fileID: 675492522771025901, guid: ecda9af87cc58cf46b897727a5ba2110, type: 3}
   tcpClient: {fileID: 0}
+  gameManager: {fileID: 0}
 --- !u!114 &6110329242465213171
 MonoBehaviour:
   m_ObjectHideFlags: 0

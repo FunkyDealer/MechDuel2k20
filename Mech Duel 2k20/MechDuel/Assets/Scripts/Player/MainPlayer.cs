@@ -10,7 +10,6 @@ public class MainPlayer : Entity
     [SerializeField]
     int maxEnergy;
 
-    bool alive;
     public bool inControl;
 
     public delegate void PlayerDeath();
@@ -56,20 +55,33 @@ public class MainPlayer : Entity
     Vector3 oldForward;
 
     public TCPClientController tcpClient;
+    public GameManager gameManager;
 
     protected override void Awake()
     {
-        alive = true;
+        ready = false;      
+
+        tcpClient = GameObject.Find("TCPClientController").GetComponent<TCPClientController>();
+        gameManager = tcpClient.GetGameManager;
+
+        Spawn();
+    }
+
+    public override void Spawn()
+    {
         currentHealth = maxHealth;
+        alive = true;
         currentEnergy = maxEnergy;
         inControl = true;
         EnergyRecoverTimer = 0;
         canRecoverEnergy = true;
         EnergyRecoverTimer = 0;
         currentArmour = 0;
+    }
 
-        tcpClient = GameObject.Find("TCPClientController").GetComponent<TCPClientController>();
-       
+    protected override void OnEnable()
+    {
+        Spawn();
     }
 
     // Start is called before the first frame update
@@ -101,15 +113,14 @@ public class MainPlayer : Entity
 
     private void SetReady()
     {
-        if (!tcpClient.gameStarted)
+        if (!gameManager.gameStarted)
         {
             if (Input.GetButtonDown("Ready"))
             {
                 if (ready) { ready = false; }
                 else { ready = true; }
                 SendReadyInfo();
-            }
-            
+            }            
         }
     }
 

@@ -96,6 +96,9 @@ namespace MechDuelServer
                             }
                         }
                         break;
+                    case MessageType.Spawned:
+                        PlayerSpawned(player, message);
+                        break;
                     case MessageType.Disconnected: //Player is switched to disconnected state, next while loop will take case of it
                         player.GameState = GameState.Disconnected;
                         //Disconnected(player);
@@ -106,6 +109,19 @@ namespace MechDuelServer
                         break;
                     default:
                         break;
+                }
+            }
+        }
+
+        private void PlayerSpawned(Player p, Message m)
+        {
+            p.alive = true;
+            Console.WriteLine($"Player {p.Name} is Spawning");
+            foreach (var NP in playersList)
+            {
+                if (p.GameState == GameState.GameStarted)
+                {
+                    p.SendMessage(m);
                 }
             }
         }
@@ -151,9 +167,7 @@ namespace MechDuelServer
         }
 
         private void Sync(Player p) //Sync player that are connecting
-        {
-           
-
+        {         
             // Process all new players
             SyncNewPlayers(p);
 
@@ -166,7 +180,6 @@ namespace MechDuelServer
             SyncShots(p);
 
             SyncDeaths(p);
-
 
             // update game State
             Message msg = new Message();
@@ -283,8 +296,7 @@ namespace MechDuelServer
                 return true;
             }
         }
-
-
+        
         private void Connecting(Player p)
         {
             if (p.DataAvailable())
@@ -333,6 +345,7 @@ namespace MechDuelServer
                 p.Id = Guid.NewGuid();
                 p.score = 0;
                 p.ready = false;
+                p.alive = false;
                 p.GameState = GameState.Connecting;
                 p.TcpClient = client;
                 playersList.Add(p); 

@@ -7,6 +7,7 @@ public class Entity : MonoBehaviour
 {
     public string nickName;
     public Guid id;
+    public int score;
     protected int currentHealth;
     [SerializeField]
     protected int maxHealth;
@@ -17,11 +18,18 @@ public class Entity : MonoBehaviour
 
     public bool ready;
 
+    public bool alive;
+
     protected virtual void Awake()
     {
-        currentHealth = maxHealth;
         ready = false;
-  
+        Spawn();
+    }
+
+    public virtual void Spawn()
+    {
+        currentHealth = maxHealth;       
+        alive = true;
     }
 
     public int Health() => currentHealth;
@@ -30,6 +38,11 @@ public class Entity : MonoBehaviour
     protected virtual void Start()
     {
         
+    }
+
+    protected virtual void OnEnable()
+    {
+        Spawn();
     }
 
     // Update is called once per frame

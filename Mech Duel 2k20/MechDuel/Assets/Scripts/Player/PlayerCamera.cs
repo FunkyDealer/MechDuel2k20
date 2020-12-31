@@ -30,7 +30,6 @@ public class PlayerCamera : MonoBehaviour
         originalRotation = transform.localRotation;
     }
 
-
     // Update is called once per frame
     void Update()
     {

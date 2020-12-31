@@ -11,6 +11,7 @@ namespace MechDuelCommon
         public Guid Id { get; set; }
         public string Name { get; set; }   
         public bool ready { get; set; }
+        public bool alive { get; set; }
         public int score { get; set; }
         [JsonIgnore]
         public TcpClient TcpClient { get; set; }

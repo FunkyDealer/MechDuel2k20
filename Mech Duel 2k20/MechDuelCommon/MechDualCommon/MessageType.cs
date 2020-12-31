@@ -14,6 +14,7 @@ namespace MechDuelCommon
         Shoot,
         gotHit,
         Died,
+        Spawned,
         FinishedSync,
         PlayerReady,
         PlayerUnready,

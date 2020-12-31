@@ -19,7 +19,7 @@ public class TCPClientController : MonoBehaviour
 
     public Text playerNameInputText;
 
-    private Dictionary<Guid, GameObject> playersList;
+    public Dictionary<Guid, GameObject> playersList;
 
     [SerializeField]
     private GameObject mainPlayerPrefab;    
@@ -27,20 +27,20 @@ public class TCPClientController : MonoBehaviour
     GameObject enemyPlayerPrefab;
     [SerializeField]
     private List<GameObject> ConnectionUI;
-    [SerializeField]
-    private List<GameObject> spawnPoints;
 
     MainPlayer mainPlayer;
 
     [SerializeField]
     ShotsManager shotsManager;
 
-    public bool gameStarted;
+    [SerializeField]
+    GameManager gameManager;
+    public GameManager GetGameManager => gameManager;
 
     void Awake()
     {
-        gameStarted = false;
 
+        gameManager.getTcpController(this);
         playersList = new Dictionary<Guid, GameObject>();
         player = new Player();
         player.GameState = GameState.Disconnected;
@@ -89,7 +89,7 @@ public class TCPClientController : MonoBehaviour
 
     public void StartTcpClient()
     {
-        gameStarted = false;
+        gameManager.gameStarted = false;
         player.TcpClient.BeginConnect(IPAddress.Parse(IpAddress), Port, AcceptConnection, player.TcpClient);
         player.GameState = GameState.Connecting;
     }
@@ -140,15 +140,31 @@ public class TCPClientController : MonoBehaviour
                 case MessageType.GameStart:
                     StartGame(message);
                     break;
+                case MessageType.GameEnd:
+                    break;
+
+                case MessageType.Spawned:
+                    SpawnOtherPlayer(message);
+                    break;
                 default:
                     break;
             }
         }
     }
 
+    private void SpawnOtherPlayer(Message m)
+    {
+        PlayerInfo info = m.PlayerInfo;
+        GameObject p = playersList[info.Id];
+        Vector3 pos = new Vector3(info.X, info.Y, info.Z);
+        Vector3 rotation = new Vector3(info.rX, info.rY, info.rZ);
+
+        gameManager.SpawnEnemyPlayer(p, pos, rotation);
+    }
+
     private void StartGame(Message m)
     {
-        gameStarted = true;
+        gameManager.StartGame();
 
         Debug.Log("Game has Started");
     }
@@ -228,7 +244,7 @@ public class TCPClientController : MonoBehaviour
     private void GetGameState(Message m)
     {
         GameInfo info = m.gameInfo;
-        gameStarted = info.gameStarted;
+        gameManager.gameStarted = info.gameStarted;
 
         foreach (var p in playersList)
         {
@@ -247,7 +263,7 @@ public class TCPClientController : MonoBehaviour
         {
             a.SetActive(false);
         }
-        GameObject p = Instantiate(mainPlayerPrefab, spawnPoints[0].transform.position, Quaternion.identity);
+        GameObject p = Instantiate(mainPlayerPrefab, Vector3.zero, Quaternion.identity);
         mainPlayer = p.GetComponent<MainPlayer>();
         
         // playerGO.GetComponent<PlayerUiController>().playerName.text = player.Name;
@@ -256,11 +272,16 @@ public class TCPClientController : MonoBehaviour
             mainPlayer.SendMovementInfo();
             mainPlayer.id = player.Id;
             mainPlayer.nickName = player.Name;
+            mainPlayer.alive = false;
         }
         else { Debug.Log("Player was null"); }
 
+        p.SetActive(false);
+
         playersList.Add(player.Id, p);
         player.GameState = GameState.GameStarted;
+
+        gameManager.SpawnMainPlayer(p);
     }
 
     private void UpdateDisconnects(Message m)
@@ -292,10 +313,12 @@ public class TCPClientController : MonoBehaviour
         if (mainPlayer != null) mainPlayer.SendMovementInfo();
         else { Debug.Log("Player was null"); }
 
-        NPCPlayer p = enemyPlayerPrefab.GetComponent<NPCPlayer>();
+        NPCPlayer p = playerGO.GetComponent<NPCPlayer>();
         p.nickName = m.PlayerInfo.Name;
         p.id = m.PlayerInfo.Id;
-    }
+        p.alive = false;
+        playerGO.SetActive(false);
+    }   
 
     private void UpdatePlayerMovement(Message m)
     {
@@ -339,5 +362,7 @@ public class TCPClientController : MonoBehaviour
             p.ReceiveDamage(HI.healthDamage, HI.shieldDamage, shooter);
         }
     }
+
+
 
 }
