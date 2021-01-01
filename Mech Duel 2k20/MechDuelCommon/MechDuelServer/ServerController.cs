@@ -17,7 +17,8 @@ namespace MechDuelServer
             playersList = new List<Player>();
         }
 
-        private bool gameStarted;        
+        private bool gameStarted;
+        private int WinScore = 5;
 
         public void StartServer()
         {
@@ -63,7 +64,7 @@ namespace MechDuelServer
                                 break;
                         }
                     }
-                    if (disconnectedPlayers) { RemoveDisconnectedPlayers(); disconnectedPlayers = false; }
+                    if (disconnectedPlayers) { RemoveDisconnectedPlayers(); disconnectedPlayers = false; CheckIfGameCanContinue(); }
                 }
             }
         }
@@ -135,56 +136,8 @@ namespace MechDuelServer
             }
         }
 
-        private void PlayerDie(Player p, Message m)
-        {
-            p.alive = false;
-            Player killer = GetPlayer(m.deathInfo.killer);
-            Console.WriteLine($"Player {p.Name} was killed by {killer.Name}");
-            SendMessageToAllOtherPlayers(m, p);
-        }
-
-        private void PlayerSpawned(Player p, Message m)
-        {
-            p.alive = true;
-            Console.WriteLine($"Player {p.Name} is Spawning");
-            SendMessageToAllOtherPlayers(m, p);
-        }
-
-        private void PlayerReadyStatus(Player p, Message m)
-        {
-            if (m.MessageType == MessageType.PlayerReady) { p.ready = true; Console.WriteLine($"player {p.Name} is now Ready"); }
-            else if (m.MessageType == MessageType.PlayerUnready) { p.ready = false; Console.WriteLine($"player {p.Name} is no longer Ready"); }
-
-            SendMessageToAllOtherPlayers(m, p);            
-
-            CheckIfGameCanStart();
-        }
-
-        private void CheckIfGameCanStart()
-        {
-            if (playersList.Count > 1)
-            {
-                bool areAllPlayersReady = true;
-
-                foreach (var p in playersList) if (!p.ready) areAllPlayersReady = false;
-
-                if (areAllPlayersReady)
-                {
-                    gameStarted = true;
-                    Console.WriteLine("All Players are Ready, game is Starting");
-                    foreach (var p in playersList)
-                    {
-                        //Message that game is Read to start;
-                        Message m = new Message();
-                        m.MessageType = MessageType.GameStart;
-                        p.SendMessage(m);
-                    }
-                }
-            }
-        }
-
         private void Sync(Player p) //Sync player that are connecting
-        {         
+        {
             // Process all new players
             SyncOtherPlayers(p);
 
@@ -200,33 +153,6 @@ namespace MechDuelServer
             p.GameState = GameState.GameStarted;
         }
 
-        private void SendGameInfo(Player p)
-        {
-            Message m = new Message();
-            m.MessageType = MessageType.Information;
-            GameInfo info = new GameInfo();
-            info.gameStarted = gameStarted;
-            info.readyPlayers = ReadyPlayers();
-            
-            p.SendMessage(m);
-        }
-
-        private List<Guid> ReadyPlayers()
-        {          
-            if (playersList.Count > 0)
-            {
-                List<Guid> readyPlayers = new List<Guid>();
-                foreach (var p in playersList)
-                {
-                    if (p.ready) readyPlayers.Add(p.Id);
-                }
-                return readyPlayers;
-            }
-            else
-            {
-                return null;
-            }
-        }        
 
         private void SyncOtherPlayers(Player player)
         {
@@ -299,7 +225,7 @@ namespace MechDuelServer
                 info.Name = p.Name;
                 msg.PlayerInfo = info;
 
-                SendMessageToAllOtherPlayers(msg, p);
+                SendMessageToAllOtherPlayers(msg, p);                
                 return true;
             }
         }
@@ -311,25 +237,22 @@ namespace MechDuelServer
                 Player playerMsg = p.ReadPlayer();
                 p.Name = playerMsg.Name;
 
-                foreach (Player NP in playersList)
-                {
-                    Message msg = new Message();
-                    msg.MessageType = MessageType.NewPlayer;
-                    msg.Description = (NP == p) ?
-                        "Successfully joined" :
-                        $"Player {p.Name} has joined";
-                    PlayerInfo info = new PlayerInfo();
-                    info.Id = p.Id;
-                    info.Name = p.Name;
-                    info.X = 0;
-                    info.Y = -10;
-                    info.Z = 0;
-                    info.rX = 0;
-                    info.rY = 0;
-                    info.rZ = 0;
-                    info.alive = p.alive;
-                    msg.PlayerInfo = info;
+                Message msg = new Message();
+                msg.MessageType = MessageType.NewPlayer;
+                PlayerInfo info = new PlayerInfo();
+                info.Id = p.Id;
+                info.Name = p.Name;
+                info.X = 0;
+                info.Y = -10;
+                info.Z = 0;
+                info.rX = 0;
+                info.rY = 0;
+                info.rZ = 0;
+                info.alive = p.alive;
+                msg.PlayerInfo = info;
 
+                foreach (Player NP in playersList)
+                {               
                     NP.SendMessage(msg);
                     NP.MessageList.Add(msg);                    
                 }
@@ -345,14 +268,163 @@ namespace MechDuelServer
             {
                 if (p.Id == id) player = p;
             }
-
             return player;
+        }
+
+        private void PlayerDie(Player p, Message m)
+        {
+            p.alive = false;
+            Player killer = GetPlayer(m.deathInfo.killer);
+            if (gameStarted) PlayerScore(killer);
+            Console.WriteLine($"Player {p.Name} was killed by {killer.Name}!");
+            SendMessageToAllOtherPlayers(m, p);
+        }
+
+        private void PlayerSpawned(Player p, Message m)
+        {
+            p.alive = true;
+            Console.WriteLine($"Player {p.Name} is Spawning");
+            SendMessageToAllOtherPlayers(m, p);
+        }
+
+        private void PlayerReadyStatus(Player p, Message m)
+        {
+            if (m.MessageType == MessageType.PlayerReady) { p.ready = true; Console.WriteLine($"player {p.Name} is now Ready"); }
+            else if (m.MessageType == MessageType.PlayerUnready) { p.ready = false; Console.WriteLine($"player {p.Name} is no longer Ready"); }
+
+            SendMessageToAllOtherPlayers(m, p);
+
+            CheckIfGameCanStart();
+        }
+
+        private void CheckIfGameCanStart()
+        {
+            if (playersList.Count > 1)
+            {
+                bool areAllPlayersReady = true;
+
+                foreach (var p in playersList) if (!p.ready) areAllPlayersReady = false;
+
+                if (areAllPlayersReady)
+                {
+                    StartGame();
+                }
+            }
+        }
+
+        private void StartGame()
+        {
+            ResetScores();
+            gameStarted = true;
+            Console.WriteLine("All Players are Ready, game is Starting");
+
+            Message m = new Message(); //Message that game is Read to start;
+            m.MessageType = MessageType.GameStart;
+
+            SendMessageToAllPlayers(m);
+        }
+
+        private void SendGameInfo(Player p)
+        {
+            Message m = new Message();
+            m.MessageType = MessageType.Information;
+            GameInfo info = new GameInfo();
+            info.gameStarted = gameStarted;
+            info.readyPlayers = ReadyPlayers();
+
+            p.SendMessage(m);
+        }
+
+        private List<Guid> ReadyPlayers()
+        {
+            if (playersList.Count > 0)
+            {
+                List<Guid> readyPlayers = new List<Guid>();
+                foreach (var p in playersList)
+                {
+                    if (p.ready) readyPlayers.Add(p.Id);
+                }
+                return readyPlayers;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+        private void PlayerScore(Player killer) //Add score to the killer
+        {
+            killer.score++;
+            CheckForGameEnd(killer);
+        }
+
+        private void CheckForGameEnd(Player winner) //check to see if the game can End
+        {
+            if (winner.score >= WinScore)
+            {
+                EndGameWithWinner(winner);
+            }
+        }
+
+        private void EndGameWithWinner(Player winner) //End the game with Winner
+        {
+            Console.WriteLine($"Game is Over, the Winner is {winner.Name}");
+            Message m = new Message();
+            m.MessageType = MessageType.GameEnd;
+            PlayerInfo info = new PlayerInfo();
+            info.Id = winner.Id;
+            info.Name = winner.Name;
+            m.PlayerInfo = info;
+
+            SendMessageToAllPlayers(m);
+            ResetGame();
+        }
+
+        private void EndGameWithoutWinner() //end the game without winner (In case of to many disconnects);
+        {
+            Message m = new Message();
+            m.MessageType = MessageType.GameEnd;           
+
+            SendMessageToAllPlayers(m);
+            ResetGame();
+        }
+
+        private void ResetScores() //Reset all player's Scores
+        {
+            Console.WriteLine("Reseting Scores");
+            foreach (var p in playersList)
+            {
+                p.score = 0;
+            }
+        }
+
+        private void ResetGame() //Reset the game status
+        {
+            gameStarted = false;
+            foreach (var p in playersList)
+            {
+                p.ready = false;
+            }
+        }
+
+        private void CheckIfGameCanContinue()
+        {
+            if (gameStarted)
+            {
+                if (playersList.Count < 2) EndGameWithoutWinner();
+            }
         }
 
 
         private void SendMessageToAllOtherPlayers(Message m, Player sender)
         {
             foreach (var p in playersList) if (p != sender && p.GameState == GameState.GameStarted) p.SendMessage(m);
+        }
+        
+        private void SendMessageToAllPlayers(Message m)
+        {
+            foreach (var p in playersList) if (p.GameState == GameState.GameStarted) p.SendMessage(m);
         }
 
         //End of Class

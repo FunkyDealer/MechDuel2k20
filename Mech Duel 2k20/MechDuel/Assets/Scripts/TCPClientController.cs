@@ -37,6 +37,7 @@ public class TCPClientController : MonoBehaviour
     GameManager gameManager;
     public GameManager GetGameManager => gameManager;
 
+
     void Awake()
     {
         gameManager.getTcpController(this);
@@ -106,41 +107,51 @@ public class TCPClientController : MonoBehaviour
     {
         if (player.DataAvailable())
         {
-            Message message = player.ReadMessage();
-            switch (message.MessageType)
+            Message m = player.ReadMessage();
+            switch (m.MessageType)
             {
                 case MessageType.PlayerName:
                     break;
                 case MessageType.NewPlayer:
-                    SpawnNewPlayer(message);
+                    SpawnNewPlayer(m);
                     break;
                 case MessageType.PlayerMovement:
-                    UpdatePlayerMovement(message);
+                    UpdatePlayerMovement(m);
                     break;
                 case MessageType.Shoot:
-                    UpdateShots(message);
+                    UpdateShots(m);
                     break;
                 case MessageType.Disconnected:
-                    UpdateDisconnects(message);
+                    UpdateDisconnects(m);
                     break;
                 case MessageType.gotHit:
-                    UpdateHits(message);
+                    UpdateHits(m);
                     break;
                 case MessageType.Died:
-                    UpdateDeath(message);
+                    UpdateDeath(m);
                     break;
                 case MessageType.GameStart:
-                    StartGame(message);
+                    StartGame(m);
                     break;
                 case MessageType.GameEnd:
-
+                    EndGame(m);
                     break;
                 case MessageType.Spawned:
-                    SpawnOtherPlayer(message);
+                    SpawnOtherPlayer(m);
                     break;
                 default:
                     break;
             }
+        }
+    }
+
+    void EndGame(Message m)
+    {
+        PlayerInfo info = m.PlayerInfo;
+        if (info != null) { GameObject o = playersList[info.Id]; gameManager.EndGameWithWinner(o); }
+        else
+        {
+            gameManager.EndGameWithoutWinner();
         }
     }
 
@@ -151,6 +162,21 @@ public class TCPClientController : MonoBehaviour
         {
             NPCPlayer p = playersList[info.id].transform.gameObject.GetComponent<NPCPlayer>();
             p.Die();
+            ScoreUpdate(info);
+        }
+    }
+
+    void ScoreUpdate(DeathInfo info)
+    {
+        if (gameManager.gameStarted)
+        {
+            GameObject o = playersList[info.killer];
+            Entity k = o.GetComponent<Entity>();
+            k.score++;
+            if (k is MainPlayer)
+            {
+                Debug.Log("Player Scored"); ///Scoring Notification
+            }
         }
     }
 
@@ -255,7 +281,6 @@ public class TCPClientController : MonoBehaviour
         GameObject p = Instantiate(mainPlayerPrefab, Vector3.zero, Quaternion.identity);
         mainPlayer = p.GetComponent<MainPlayer>();
         
-        // playerGO.GetComponent<PlayerUiController>().playerName.text = player.Name;
         if (mainPlayer != null)
         {
             mainPlayer.SendMovementInfo();
@@ -270,7 +295,8 @@ public class TCPClientController : MonoBehaviour
         playersList.Add(player.Id, p);
         player.GameState = GameState.GameStarted;
 
-        gameManager.SpawnMainPlayer(p);
+        gameManager.RegisterMainPlayer(p);
+        gameManager.SpawnSpectator();
     }
 
     private void SpawnNewPlayer(Message m)

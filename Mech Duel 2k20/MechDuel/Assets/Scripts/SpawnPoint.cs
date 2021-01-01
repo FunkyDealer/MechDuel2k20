@@ -4,16 +4,14 @@ using UnityEngine;
 
 public class SpawnPoint : MonoBehaviour
 {
-    bool occupied;
-    int inPlayers;
-
     public Vector3 spawnPos;
+
+    List<GameObject> playersIn;
 
     void Awake()
     {
-        occupied = false;
-        inPlayers = 0;
         spawnPos = transform.position;
+        playersIn = new List<GameObject>();
     }
 
     // Start is called before the first frame update
@@ -29,26 +27,39 @@ public class SpawnPoint : MonoBehaviour
     }
 
 
-    public bool CanSpawn()
-    {
-        return !occupied;
-    }
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
-        {
-            occupied = true;
-            inPlayers++;
+        {                
+                playersIn.Add(other.gameObject);
         }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+       // occupied = true;
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            inPlayers--;
-            if (inPlayers == 0) occupied = false;
+            playersIn.Remove(other.gameObject);
         }
+    }
+
+    public bool isOcupied()
+    {
+        bool ocupied = false;
+
+        if (playersIn.Count > 0)
+        {
+            foreach (var p in playersIn)
+            {
+                if (p.activeSelf) ocupied = true;
+            }
+        }
+
+        return !ocupied;
     }
 }
