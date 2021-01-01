@@ -233,7 +233,7 @@ public class MainPlayer : Entity
         int dmgHealth = damage;
         int dmgShield = 0;
 
-        if (currentArmour < 0)
+        if (currentArmour > 0)
         { //If player has shield
             dmgHealth = damage / 5; //damage receive is 1/5
             currentHealth -= dmgHealth;
@@ -244,11 +244,11 @@ public class MainPlayer : Entity
         else
         {
             currentHealth -= damage;
-        }
-
-        checkHealth();
+        }             
 
         SendHit(dmgHealth, dmgShield, shooter);
+
+        checkHealth(shooter);
 
         onHealthUpdate(currentHealth, maxHealth);
         onShieldUpdate(currentArmour, maxArmour);
@@ -258,7 +258,7 @@ public class MainPlayer : Entity
     private void SendHit(int HealthDam,int shieldDam, Entity shooter)
     {
         Message m = new Message();
-        m.MessageType = MessageType.PlayerMovement;
+        m.MessageType = MessageType.gotHit;
         HitInfo info = new HitInfo();
         info.hitId = id;
         info.name = nickName;
@@ -269,13 +269,14 @@ public class MainPlayer : Entity
         tcpClient.player.SendMessage(m);
     }
 
-    public override void Die()
+    public override void Die(Entity shooter)
     {
         currentHealth = 0;
         alive = false;
         inControl = false;
         Debug.Log($"Player Died");
-
+        SendDeathInformation(shooter);
+        tcpClient.GetGameManager.MainPlayerDie(this.gameObject);
     }
 
     public void increaseShield(int ammount)
@@ -287,7 +288,20 @@ public class MainPlayer : Entity
 
 
 
-
+    private void SendDeathInformation(Entity shooter)
+    {
+        Message m = new Message();
+        m.MessageType = MessageType.Died;
+        DeathInfo info = new DeathInfo();
+        info.x = transform.position.x;
+        info.y = transform.position.y;
+        info.z = transform.position.z;
+        info.id = id;
+        info.name = nickName;
+        info.killer = shooter.id;
+        m.deathInfo = info;
+        tcpClient.player.SendMessage(m);
+    } 
 
 
 }

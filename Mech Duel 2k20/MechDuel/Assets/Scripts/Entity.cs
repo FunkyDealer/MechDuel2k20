@@ -52,15 +52,20 @@ public class Entity : MonoBehaviour
     }
 
 
-    public virtual void getDamage(int damage, Entity entity)
+    public virtual void getDamage(int damage, Entity shooter)
     {
         currentHealth -= damage;
-        checkHealth();
+        checkHealth(shooter);
     }
 
-    protected virtual void checkHealth()
+    protected virtual void checkHealth(Entity shooter)
     {
-        if (currentHealth <= 0) Die();
+        if (currentHealth <= 0) Die(shooter);
+    }
+
+    public virtual void Die(Entity shooter)
+    {
+
     }
 
     public virtual void Die()

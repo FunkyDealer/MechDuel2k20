@@ -42,4 +42,14 @@ public class NPCPlayer : Entity
         Debug.Log($"Player {nickName}");
     }
 
+    protected override void checkHealth(Entity shooter)
+    {
+        
+    }
+
+    public override void Die()
+    {
+        this.gameObject.SetActive(false);
+    }
+
 }

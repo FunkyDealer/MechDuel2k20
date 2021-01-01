@@ -1158,6 +1158,8 @@ MonoBehaviour:
   spawnPoints:
   - {fileID: 1569056335}
   - {fileID: 1394229385}
+  spectator: {fileID: 3800649922384086246, guid: 45787cd80e94a5647866b0065d04df7e,
+    type: 3}
 --- !u!4 &1198898589
 Transform:
   m_ObjectHideFlags: 0

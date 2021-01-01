@@ -39,7 +39,6 @@ public class TCPClientController : MonoBehaviour
 
     void Awake()
     {
-
         gameManager.getTcpController(this);
         playersList = new Dictionary<Guid, GameObject>();
         player = new Player();
@@ -99,14 +98,8 @@ public class TCPClientController : MonoBehaviour
         TcpClient client = (TcpClient)result.AsyncState;
         client.EndConnect(result);
 
-        if (client.Connected)
-        {
-            Debug.Log("client connected");
-        }
-        else
-        {
-            Debug.Log("Client connection refused");
-        }
+        if (client.Connected) Debug.Log("client connected");
+        else Debug.Log("Client connection refused");
     }
 
     private void GameStarted()
@@ -114,7 +107,6 @@ public class TCPClientController : MonoBehaviour
         if (player.DataAvailable())
         {
             Message message = player.ReadMessage();
-
             switch (message.MessageType)
             {
                 case MessageType.PlayerName:
@@ -132,23 +124,33 @@ public class TCPClientController : MonoBehaviour
                     UpdateDisconnects(message);
                     break;
                 case MessageType.gotHit:
-
+                    UpdateHits(message);
                     break;
                 case MessageType.Died:
-
+                    UpdateDeath(message);
                     break;
                 case MessageType.GameStart:
                     StartGame(message);
                     break;
                 case MessageType.GameEnd:
-                    break;
 
+                    break;
                 case MessageType.Spawned:
                     SpawnOtherPlayer(message);
                     break;
                 default:
                     break;
             }
+        }
+    }
+
+    void UpdateDeath(Message m)
+    {
+        DeathInfo info = m.deathInfo;
+        if (info.id != player.Id)
+        {
+            NPCPlayer p = playersList[info.id].transform.gameObject.GetComponent<NPCPlayer>();
+            p.Die();
         }
     }
 
@@ -162,16 +164,7 @@ public class TCPClientController : MonoBehaviour
         gameManager.SpawnEnemyPlayer(p, pos, rotation);
     }
 
-    private void StartGame(Message m)
-    {
-        gameManager.StartGame();
-
-        Debug.Log("Game has Started");
-    }
-
-
     #region connecting
-
     private void Connected()
     {
         if (player.DataAvailable())
@@ -207,8 +200,6 @@ public class TCPClientController : MonoBehaviour
         {
             // Debug.Log("Data to read");
             Message messageReceived = player.ReadMessage();
-
-            //string json = player.BinaryReader.ReadString();
             switch (messageReceived.MessageType)
             {
                 case MessageType.PlayerName:
@@ -228,12 +219,6 @@ public class TCPClientController : MonoBehaviour
                     break;
                 case MessageType.Disconnected:
                     UpdateDisconnects(messageReceived);
-                    break;
-                case MessageType.gotHit:
-
-                    break;
-                case MessageType.Died:
-
                     break;
                 case MessageType.Information:
                     GetGameState(messageReceived);
@@ -288,27 +273,6 @@ public class TCPClientController : MonoBehaviour
         gameManager.SpawnMainPlayer(p);
     }
 
-    private void UpdateDisconnects(Message m)
-    {
-        if (playersList.ContainsKey(m.PlayerInfo.Id))
-        {
-            Destroy(playersList[m.PlayerInfo.Id].transform.gameObject);
-            Debug.Log($"Player {playersList[m.PlayerInfo.Id].name} Disconnected");
-        }
-        playersList.Remove(m.PlayerInfo.Id);        
-    }
-
-    private void Disconnect()
-    {
-        Message m = new Message();
-        m.MessageType = MessageType.Disconnected;
-        PlayerInfo info = new PlayerInfo();
-        info.Id = player.Id;
-        info.Name = player.Name;        
-        m.PlayerInfo = info;        
-        player.SendMessage(m);
-    }
-
     private void SpawnNewPlayer(Message m)
     {
         GameObject playerGO = Instantiate(enemyPlayerPrefab, new Vector3(m.PlayerInfo.X, m.PlayerInfo.Y, m.PlayerInfo.Z), Quaternion.identity);
@@ -353,7 +317,7 @@ public class TCPClientController : MonoBehaviour
     {
         HitInfo HI = m.hitInfo;
 
-        if (playersList.ContainsKey(HI.hitId))
+        if (HI.hitId != player.Id && playersList.ContainsKey(HI.hitId))
         {
             NPCPlayer p = playersList[HI.hitId].GetComponent<NPCPlayer>();
 
@@ -367,6 +331,33 @@ public class TCPClientController : MonoBehaviour
         }
     }
 
+    #region Disconnects
+    private void Disconnect()
+    {
+        Message m = new Message();
+        m.MessageType = MessageType.Disconnected;
+        PlayerInfo info = new PlayerInfo();
+        info.Id = player.Id;
+        info.Name = player.Name;
+        m.PlayerInfo = info;
+        player.SendMessage(m);
+    }
 
+    private void UpdateDisconnects(Message m)
+    {
+        if (playersList.ContainsKey(m.PlayerInfo.Id))
+        {
+            Destroy(playersList[m.PlayerInfo.Id].transform.gameObject);
+            Debug.Log($"Player {playersList[m.PlayerInfo.Id].name} Disconnected");
+        }
+        playersList.Remove(m.PlayerInfo.Id);
+    }
+    #endregion
 
+    private void StartGame(Message m)
+    {
+        gameManager.StartGame();
+
+        Debug.Log("Game has Started");
+    }
 }

@@ -82,7 +82,7 @@ public class Pistol : Weapon
         shot.damage = baseDamage;
         m.shot = shot;
         manager.GetPlayer.tcpClient.player.SendMessage(m);
-        Debug.Log("sending shot");
+       // Debug.Log("sending shot");
     }
 
     private void SecondaryFire()

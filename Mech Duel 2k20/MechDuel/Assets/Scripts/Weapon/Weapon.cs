@@ -75,5 +75,6 @@ public class Weapon : MonoBehaviour
             Transform c = transform.GetChild(i);
             if (c.gameObject.name == "ShootPlace") ShootPlaces.Add(c);
         }
+
     }
 }

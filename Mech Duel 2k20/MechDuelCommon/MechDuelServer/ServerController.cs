@@ -17,8 +17,7 @@ namespace MechDuelServer
             playersList = new List<Player>();
         }
 
-        private bool gameStarted;
-        
+        private bool gameStarted;        
 
         public void StartServer()
         {
@@ -69,6 +68,34 @@ namespace MechDuelServer
             }
         }
 
+
+        private void AcceptClient(IAsyncResult result)
+        {
+            TcpListener listener = (TcpListener)result.AsyncState;
+            TcpClient client = listener.EndAcceptTcpClient(result);
+
+            if (client.Connected)
+            {
+                Console.WriteLine("accepted new client");
+                Player p = new Player();
+                p.MessageList = new List<Message>();
+                p.Id = new Guid();
+                p.Id = Guid.NewGuid();
+                p.score = 0;
+                p.ready = false;
+                p.alive = false;
+                p.GameState = GameState.Connecting;
+                p.TcpClient = client;
+                playersList.Add(p);
+
+                p.SendPlayer(p);
+            }
+            else
+            {
+                Console.WriteLine("Connection refused");
+            }
+        }
+
         private void RemoveDisconnectedPlayers()
         {
             playersList.RemoveAll(x => x.GameState == GameState.Disconnected);
@@ -80,32 +107,27 @@ namespace MechDuelServer
             if (player.DataAvailable())
             {
                // Console.WriteLine("New player position ");
-                Message message = player.ReadMessage();
-                switch (message.MessageType)
+                Message m = player.ReadMessage();
+                switch (m.MessageType)
                 {
                     case MessageType.PlayerMovement:
                     case MessageType.Shoot:
                     case MessageType.gotHit:
+                        if (m.MessageType == MessageType.gotHit) Console.WriteLine($"player {player.Name} got shot by {GetPlayer(m.hitInfo.shooter).Name} for {m.hitInfo.healthDamage}");
+                        SendMessageToAllOtherPlayers(m, player); //Send message to each player about what's happening
+                        break;
                     case MessageType.Died:
-                        if (message.MessageType != MessageType.PlayerMovement) Console.WriteLine($"message: {message.MessageType.ToString()}");
-                        foreach (var p in playersList) //Send message to each player about what's happening
-                        {
-                            if (p.GameState == GameState.GameStarted)
-                            {
-                                p.SendMessage(message);
-                            }
-                        }
+                        PlayerDie(player, m);
                         break;
                     case MessageType.Spawned:
-                        PlayerSpawned(player, message);
+                        PlayerSpawned(player, m);
                         break;
                     case MessageType.Disconnected: //Player is switched to disconnected state, next while loop will take case of it
                         player.GameState = GameState.Disconnected;
-                        //Disconnected(player);
                         break;
                     case MessageType.PlayerReady:
                     case MessageType.PlayerUnready:
-                        PlayerReadyStatus(player, message);
+                        PlayerReadyStatus(player, m);
                         break;
                     default:
                         break;
@@ -113,31 +135,27 @@ namespace MechDuelServer
             }
         }
 
+        private void PlayerDie(Player p, Message m)
+        {
+            p.alive = false;
+            Player killer = GetPlayer(m.deathInfo.killer);
+            Console.WriteLine($"Player {p.Name} was killed by {killer.Name}");
+            SendMessageToAllOtherPlayers(m, p);
+        }
+
         private void PlayerSpawned(Player p, Message m)
         {
             p.alive = true;
             Console.WriteLine($"Player {p.Name} is Spawning");
-            foreach (var NP in playersList)
-            {
-                if (NP.GameState == GameState.GameStarted)
-                {
-                    NP.SendMessage(m);
-                }
-            }
+            SendMessageToAllOtherPlayers(m, p);
         }
 
         private void PlayerReadyStatus(Player p, Message m)
         {
             if (m.MessageType == MessageType.PlayerReady) { p.ready = true; Console.WriteLine($"player {p.Name} is now Ready"); }
             else if (m.MessageType == MessageType.PlayerUnready) { p.ready = false; Console.WriteLine($"player {p.Name} is no longer Ready"); }
-                       
-            foreach (var NP in playersList) //Send message to each player about what's happening
-            {
-                if (NP.GameState == GameState.GameStarted)
-                {
-                    NP.SendMessage(m);
-                }
-            }
+
+            SendMessageToAllOtherPlayers(m, p);            
 
             CheckIfGameCanStart();
         }
@@ -159,7 +177,6 @@ namespace MechDuelServer
                         //Message that game is Read to start;
                         Message m = new Message();
                         m.MessageType = MessageType.GameStart;
-
                         p.SendMessage(m);
                     }
                 }
@@ -181,11 +198,6 @@ namespace MechDuelServer
             msg.MessageType = MessageType.FinishedSync;
             p.SendMessage(msg);
             p.GameState = GameState.GameStarted;
-        }
-
-        private void SyncDeaths(Player p)
-        {
-
         }
 
         private void SendGameInfo(Player p)
@@ -226,8 +238,7 @@ namespace MechDuelServer
                     m.MessageType = MessageType.NewPlayer;
                     PlayerInfo info = p.MessageList.FirstOrDefault(x => x.MessageType == MessageType.NewPlayer).PlayerInfo;
                     m.PlayerInfo = info;
-                    m.PlayerInfo.alive = p.alive;
-                    
+                    m.PlayerInfo.alive = p.alive;                    
 
                     player.SendMessage(m);
                 }
@@ -286,11 +297,9 @@ namespace MechDuelServer
                 PlayerInfo info = new PlayerInfo();
                 info.Id = p.Id;
                 info.Name = p.Name;
+                msg.PlayerInfo = info;
 
-                foreach (Player NP in playersList)
-                {
-                    NP.SendMessage(msg);
-                }
+                SendMessageToAllOtherPlayers(msg, p);
                 return true;
             }
         }
@@ -340,31 +349,10 @@ namespace MechDuelServer
             return player;
         }
 
-        private void AcceptClient(IAsyncResult result)
+
+        private void SendMessageToAllOtherPlayers(Message m, Player sender)
         {
-            TcpListener listener = (TcpListener)result.AsyncState;
-            TcpClient client = listener.EndAcceptTcpClient(result);
-
-            if (client.Connected)
-            {
-                Console.WriteLine("accepted new client");
-                Player p = new Player();
-                p.MessageList = new List<Message>();
-                p.Id = new Guid();
-                p.Id = Guid.NewGuid();
-                p.score = 0;
-                p.ready = false;
-                p.alive = false;
-                p.GameState = GameState.Connecting;
-                p.TcpClient = client;
-                playersList.Add(p); 
-
-                p.SendPlayer(p);
-            }
-            else
-            {
-                Console.WriteLine("Connection refused");
-            }
+            foreach (var p in playersList) if (p != sender && p.GameState == GameState.GameStarted) p.SendMessage(m);
         }
 
         //End of Class

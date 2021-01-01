@@ -10,6 +10,9 @@ public class GameManager : MonoBehaviour
 
     public List<SpawnPoint> spawnPoints;
 
+    [SerializeField]
+    GameObject spectator;
+
     void Awake()
     {
         gameStarted = false;
@@ -67,8 +70,7 @@ public class GameManager : MonoBehaviour
     {
         int max = spawnPoints.Count;
         Vector3 pos = SelectSpawnPoint(max);
-
-        
+                
         p.SetActive(true);
         p.transform.position = pos;
 
@@ -106,4 +108,21 @@ public class GameManager : MonoBehaviour
         if (spawnPoints[spawnPoint].CanSpawn()) return spawnPoints[spawnPoint].spawnPos;
         else return SelectSpawnPoint(max);
     }
+    
+    public void MainPlayerDie(GameObject o)
+    {
+        o.SetActive(false);
+        SpawnSpectator(o.transform.position, o.transform.forward);
+    }
+
+    public void SpawnSpectator(Vector3 position, Vector3 forward)
+    {
+        GameObject o = Instantiate(spectator, position, Quaternion.identity);
+        o.transform.forward = forward;
+    }
+
+    
+
+
+
 }
