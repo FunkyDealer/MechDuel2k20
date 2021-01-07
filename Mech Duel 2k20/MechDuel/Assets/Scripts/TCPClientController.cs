@@ -37,7 +37,10 @@ public class TCPClientController : MonoBehaviour
     GameManager gameManager;
     public GameManager GetGameManager => gameManager;
 
-
+    [SerializeField]
+    GameObject canvas;
+    [SerializeField]
+    Text ready;
     void Awake()
     {
         gameManager.getTcpController(this);
@@ -66,7 +69,7 @@ public class TCPClientController : MonoBehaviour
             switch (player.GameState)
             {
                 case GameState.Connecting:
-                   // Debug.Log("connecting");
+                    // Debug.Log("connecting");
                     Connecting();
                     break;
                 case GameState.Connected:
@@ -79,11 +82,17 @@ public class TCPClientController : MonoBehaviour
                     break;
                 case GameState.GameStarted:
                     // Debug.Log("Game Started");
-                    GameStarted();                    
+                    GameStarted();
                     break;
                 default:
                     break;
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.F1))
+        {
+            canvas.SetActive(false);
+            ready.text = "READY";
         }
     }
 
@@ -170,6 +179,7 @@ public class TCPClientController : MonoBehaviour
     {
         if (gameManager.gameStarted)
         {
+            
             GameObject o = playersList[info.killer];
             Entity k = o.GetComponent<Entity>();
             k.score++;
@@ -258,8 +268,14 @@ public class TCPClientController : MonoBehaviour
 
     private void GetGameState(Message m)
     {
+        
         GameInfo info = m.gameInfo;
-        gameManager.gameStarted = info.gameStarted;
+        try { gameManager.gameStarted = info.gameStarted; }
+        catch  
+        {
+        
+        }
+        
 
         foreach (var p in playersList)
         {

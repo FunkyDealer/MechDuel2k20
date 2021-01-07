@@ -6,8 +6,8 @@ using UnityEngine.UI;
 
 public class ScoreBoard : MonoBehaviour
 {
-    [SerializeField]
-    Entity[] Players;
+
+    TCPClientController Players;
     [SerializeField]
     Text[] texts;
     [SerializeField]
@@ -17,15 +17,16 @@ public class ScoreBoard : MonoBehaviour
     bool scoreBoard;
     private void Start()
     {
-        Players = FindObjectsOfType<Entity>();
+        Players = GetComponent<TCPClientController>();
     }
     void Update()
     {
         int c = 0;
-        foreach(var v in Players) 
+        foreach (GameObject v in Players.playersList.Values)
         {
-            names[c].text = v.nickName;
-            texts[c].text =  Convert.ToString(v.score);
+            Entity e = v.GetComponent<Entity>();
+            texts[c].text = Convert.ToString(e.score);
+            names[c].text = e.nickName;
             c++;
         }
 

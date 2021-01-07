@@ -7,3 +7,11 @@ E:\Unity Projects\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDue
 E:\Unity Projects\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDuelCommon.csproj.CopyComplete
 E:\Unity Projects\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDualCommon.dll
 E:\Unity Projects\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDualCommon.pdb
+E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\bin\Debug\MechDualCommon.dll
+E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\bin\Debug\MechDualCommon.pdb
+E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\bin\Debug\Newtonsoft.Json.dll
+E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\bin\Debug\Newtonsoft.Json.xml
+E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDuelCommon.csprojAssemblyReference.cache
+E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDuelCommon.csproj.CopyComplete
+E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDualCommon.dll
+E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDualCommon.pdb
