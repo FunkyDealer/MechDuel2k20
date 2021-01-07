@@ -14,7 +14,8 @@ public class GameManager : MonoBehaviour
     GameObject spectator;
 
     GameObject mainPlayer;
-  
+
+    int SpawnPointsNumber;
 
     void Awake()
     {
@@ -26,7 +27,7 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        SpawnPointsNumber = spawnPoints.Count;
     }
 
     // Update is called once per frame
@@ -79,9 +80,8 @@ public class GameManager : MonoBehaviour
     }
 
     public void SpawnMainPlayer()
-    {
-        int max = spawnPoints.Count;
-        Vector3 pos = SelectSpawnPoint(max);
+    {       
+        Vector3 pos = SelectSpawnPoint(SpawnPointsNumber);
 
         mainPlayer.SetActive(true);
         mainPlayer.transform.position = pos;

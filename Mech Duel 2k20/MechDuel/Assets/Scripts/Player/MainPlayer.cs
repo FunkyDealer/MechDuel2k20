@@ -57,6 +57,10 @@ public class MainPlayer : Entity
     public TCPClientController tcpClient;
     public GameManager gameManager;
 
+    [SerializeField]
+    ReadyInfo readyHud;
+
+
     protected override void Awake()
     {
         ready = false;      
@@ -64,7 +68,8 @@ public class MainPlayer : Entity
         tcpClient = GameObject.Find("TCPClientController").GetComponent<TCPClientController>();
         gameManager = tcpClient.GetGameManager;
 
-        Spawn();
+        Spawn();      
+        
     }
 
     public override void Spawn()
@@ -76,8 +81,9 @@ public class MainPlayer : Entity
         EnergyRecoverTimer = 0;
         canRecoverEnergy = true;
         EnergyRecoverTimer = 0;
-        currentArmour = 0;
+        currentArmour = 0;        
     }
+
 
     protected override void OnEnable()
     {
@@ -103,7 +109,6 @@ public class MainPlayer : Entity
     protected override void Update()
     {
         base.Update();
-
         if (alive && inControl)
         {
             recoverEnergy();
@@ -120,8 +125,14 @@ public class MainPlayer : Entity
                 if (ready) { ready = false; }
                 else { ready = true; }
                 SendReadyInfo();
+                readyHud.ChangeText(ready, gameManager.gameStarted);
             }            
         }
+    }
+
+    public void GameStart()
+    {
+        readyHud.ChangeText(ready, gameManager.gameStarted);
     }
 
     private void SendReadyInfo()
@@ -285,8 +296,6 @@ public class MainPlayer : Entity
         else currentArmour = maxArmour;
         onShieldUpdate(currentArmour, maxArmour);
     }
-
-
 
     private void SendDeathInformation(Entity shooter)
     {

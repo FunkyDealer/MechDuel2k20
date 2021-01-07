@@ -15,3 +15,12 @@ E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechD
 E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDuelCommon.csproj.CopyComplete
 E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDualCommon.dll
 E:\Trabalhos\PROJETO APLICADO I\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDualCommon.pdb
+B:\github\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\bin\Debug\MechDualCommon.dll
+B:\github\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\bin\Debug\MechDualCommon.pdb
+B:\github\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\bin\Debug\Newtonsoft.Json.dll
+B:\github\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\bin\Debug\Newtonsoft.Json.xml
+B:\github\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDuelCommon.csprojAssemblyReference.cache
+B:\github\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDuelCommon.csproj.CoreCompileInputs.cache
+B:\github\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDuelCommon.csproj.CopyComplete
+B:\github\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDualCommon.dll
+B:\github\MechDuel2k20\Mech Duel 2k20\MechDuelCommon\MechDualCommon\obj\Debug\MechDualCommon.pdb

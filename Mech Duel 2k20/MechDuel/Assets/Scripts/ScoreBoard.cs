@@ -6,35 +6,41 @@ using UnityEngine.UI;
 
 public class ScoreBoard : MonoBehaviour
 {
+    [HideInInspector]
+    public TCPClientController TcpController;
 
-    TCPClientController Players;
     [SerializeField]
     Text[] texts;
     [SerializeField]
     Text[] names;
-    [SerializeField]
-    GameObject Canvas;
-    bool scoreBoard;
+
     private void Start()
     {
-        Players = GetComponent<TCPClientController>();
-    }
-    void Update()
-    {
         int c = 0;
-        foreach (GameObject v in Players.playersList.Values)
+        foreach (GameObject v in TcpController.playersList.Values)
         {
             Entity e = v.GetComponent<Entity>();
             texts[c].text = Convert.ToString(e.score);
             names[c].text = e.nickName;
             c++;
         }
+    }
 
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            scoreBoard = !scoreBoard;
-        }
-        Canvas.SetActive(scoreBoard);
+    void Update()
+    {
 
     }
+
+    public void UpdateScore()
+    {
+        int c = 0;
+        foreach (GameObject v in TcpController.playersList.Values)
+        {
+            Entity e = v.GetComponent<Entity>();
+            texts[c].text = Convert.ToString(e.score);
+            names[c].text = e.nickName;
+            c++;
+        }
+    }
+
 }

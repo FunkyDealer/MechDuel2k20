@@ -38,9 +38,10 @@ public class TCPClientController : MonoBehaviour
     public GameManager GetGameManager => gameManager;
 
     [SerializeField]
-    GameObject canvas;
-    [SerializeField]
-    Text ready;
+    GameObject ScoreBoardObject;
+    [HideInInspector]
+    public ScoreBoard scoreBoard;
+
     void Awake()
     {
         gameManager.getTcpController(this);
@@ -52,7 +53,7 @@ public class TCPClientController : MonoBehaviour
 
     void Start()
     {
-        
+        SpawnScoreBoard();
     }
 
     void OnDestroy()
@@ -87,13 +88,19 @@ public class TCPClientController : MonoBehaviour
                 default:
                     break;
             }
-        }
 
-        if (Input.GetKeyDown(KeyCode.F1))
-        {
-            canvas.SetActive(false);
-            ready.text = "READY";
+
         }
+    }
+
+    private void SpawnScoreBoard()
+    {
+        GameObject o = Instantiate(ScoreBoardObject, Vector3.zero, Quaternion.identity);
+        ScoreBoard s = o.GetComponent<ScoreBoard>();
+        s.TcpController = this;
+        scoreBoard = s;
+        o.SetActive(false);
+        
     }
 
     public void StartTcpClient()
@@ -152,6 +159,9 @@ public class TCPClientController : MonoBehaviour
                     break;
             }
         }
+
+        if (Input.GetButtonDown("ScoreBoard")) { scoreBoard.gameObject.SetActive(true); Debug.Log("ScoreBoard On"); }
+        if (Input.GetButtonUp("ScoreBoard")) { scoreBoard.gameObject.SetActive(false); Debug.Log("ScoreBoard off"); }
     }
 
     void EndGame(Message m)
@@ -178,8 +188,7 @@ public class TCPClientController : MonoBehaviour
     void ScoreUpdate(DeathInfo info)
     {
         if (gameManager.gameStarted)
-        {
-            
+        {            
             GameObject o = playersList[info.killer];
             Entity k = o.GetComponent<Entity>();
             k.score++;
@@ -187,6 +196,8 @@ public class TCPClientController : MonoBehaviour
             {
                 Debug.Log("Player Scored"); ///Scoring Notification
             }
+
+            scoreBoard.UpdateScore();
         }
     }
 
@@ -399,6 +410,7 @@ public class TCPClientController : MonoBehaviour
     private void StartGame(Message m)
     {
         gameManager.StartGame();
+        mainPlayer.GameStart();
 
         Debug.Log("Game has Started");
     }
