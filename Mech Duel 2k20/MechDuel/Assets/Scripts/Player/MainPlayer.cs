@@ -63,6 +63,7 @@ public class MainPlayer : Entity
 
     protected override void Awake()
     {
+        oldPosition = Vector3.zero;
         ready = false;      
 
         tcpClient = GameObject.Find("TCPClientController").GetComponent<TCPClientController>();
@@ -309,6 +310,7 @@ public class MainPlayer : Entity
         info.name = nickName;
         info.killer = shooter.id;
         m.deathInfo = info;
+        tcpClient.ScoreUpdate(info);
         tcpClient.player.SendMessage(m);
     } 
 

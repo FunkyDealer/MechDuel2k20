@@ -185,17 +185,13 @@ public class TCPClientController : MonoBehaviour
         }
     }
 
-    void ScoreUpdate(DeathInfo info)
+    public void ScoreUpdate(DeathInfo info)
     {
         if (gameManager.gameStarted)
         {            
             GameObject o = playersList[info.killer];
             Entity k = o.GetComponent<Entity>();
             k.score++;
-            if (k is MainPlayer)
-            {
-                Debug.Log("Player Scored"); ///Scoring Notification
-            }
 
             scoreBoard.UpdateScore();
         }

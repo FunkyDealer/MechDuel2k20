@@ -148,8 +148,6 @@ public class PlayerMovementManager : MonoBehaviour
     public void rotatePlayer(Quaternion xQuaternion)
     {
         transform.localRotation = originalRotation * xQuaternion;
-    }
-
-    
+    }   
 
 }

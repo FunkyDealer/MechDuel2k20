@@ -55,7 +55,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\ReadyInfo.cs" />
      <Compile Include="Assets\Scripts\ChangeScene.cs" />
      <Compile Include="Assets\Scripts\Entity.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
@@ -73,6 +72,7 @@
      <Compile Include="Assets\Scripts\Projectiles\HitScanProjectile.cs" />
      <Compile Include="Assets\Scripts\Projectiles\Laser.cs" />
      <Compile Include="Assets\Scripts\Projectiles\Projectile.cs" />
+     <Compile Include="Assets\Scripts\ReadyInfo.cs" />
      <Compile Include="Assets\Scripts\ScoreBoard.cs" />
      <Compile Include="Assets\Scripts\ShotsManager.cs" />
      <Compile Include="Assets\Scripts\SpawnPoint.cs" />

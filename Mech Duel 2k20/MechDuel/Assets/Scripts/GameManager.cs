@@ -83,8 +83,8 @@ public class GameManager : MonoBehaviour
     {       
         Vector3 pos = SelectSpawnPoint(SpawnPointsNumber);
 
-        mainPlayer.SetActive(true);
         mainPlayer.transform.position = pos;
+        mainPlayer.SetActive(true);        
         SendMainPlayerSpawnInformation();
     }
 
